@@ -52,7 +52,7 @@ const preset=[
 ["Piso 3","Reloj de pared LED",1,3,220,"1F",.90,1,24,"","ESTIMADO"]
 ];
 let S={p:{v:220,sys:"3F",tar:T,days:30,area:360,bill:331},a:[],m:measured.map(x=>({e:x[0],s:x[1],r:x[2],u:x[3],i:x[4],t:x[5],va:x[6],pw:x[7],o:x[8]}))};
-function init(){try{S=JSON.parse(localStorage.getItem(KEY))||S}catch(e){}if(!S.a.length)restore();bind();draw();document.querySelectorAll(".tab").forEach(x=>x.onclick=()=>tab(x.dataset.tab))}
+function init(){try{S=JSON.parse(localStorage.getItem(KEY))||S}catch(e){}if(!Array.isArray(S.m))S.m=measured.map(x=>({e:x[0],s:x[1],r:x[2],u:x[3],i:x[4],t:x[5],va:x[6],pw:x[7],o:x[8]}));if(!S.a.length)restore();bind();draw();document.querySelectorAll(".tab").forEach(x=>x.onclick=()=>tab(x.dataset.tab))}
 function restore(){S.a=preset.map(x=>({r:x[0],n:x[1],q:x[2],w:x[3],v:x[4],f:x[5],pf:x[6],fd:x[7],h:x[8],fixed:x[9],d:x[10]}));S.m=measured.map(x=>({e:x[0],s:x[1],r:x[2],u:x[3],i:x[4],t:x[5],va:x[6],pw:x[7],o:x[8]}));save();draw()}
 function bind(){["voltage","system","tariff","days","area","bill"].forEach(id=>document.getElementById(id).oninput=()=>{let k={voltage:"v",system:"sys",tariff:"tar",days:"days",area:"area",bill:"bill"}[id];S.p[k]=id==="system"?document.getElementById(id).value:+document.getElementById(id).value;save();draw()})}
 function save(){localStorage.setItem(KEY,JSON.stringify(S))}
