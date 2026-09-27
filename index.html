@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hugo | Cuadro de Cargas y Consumo</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+<header><div><h1>⚡ Hugo · Cuadro de Cargas</h1><p>Consumo · máxima demanda · FP · FD · costos · normativa Perú</p></div>
+<div><button onclick="exportXLSX()">⬇ Excel</button><button class="light" onclick="window.print()">🖨 PDF</button></div></header>
+<nav>
+<button class="tab active" data-tab="resumen">Resumen</button><button class="tab" data-tab="cargas">Cuadro de cargas</button>
+<button class="tab" data-tab="consumo">Consumo por equipo</button><button class="tab" data-tab="normativa">Normativa Perú</button>
+</nav>
+<main>
+<section id="resumen" class="page active">
+<div class="cards"><article><small>Potencia instalada</small><b id="kInst">0</b></article><article><small>Máxima demanda</small><b id="kDem">0</b></article><article><small>Consumo mensual</small><b id="kKwh">0</b></article><article><small>Costo energía</small><b id="kCost">0</b></article><article><small>Recibo real</small><b id="kBill">331</b></article><article><small>Diferencia</small><b id="kDiff">0</b></article></div>
+<div class="grid">
+<div class="panel"><h2>Parámetros</h2><div class="form">
+<label>Tensión (V)<input id="voltage" type="number" value="220"></label>
+<label>Sistema<select id="system"><option>1F</option><option selected>3F</option></select></label>
+<label>Tarifa S/kWh<input id="tariff" type="number" step=".0001" value=".6545"></label>
+<label>Días/mes<input id="days" type="number" value="30"></label>
+<label>Área m²<input id="area" type="number" value="360"></label>
+<label>Consumo real kWh/mes<input id="bill" type="number" value="331"></label></div></div>
+<div class="panel"><h2>Mayores consumos</h2><div id="top"></div></div></div>
+<div class="panel"><h2>Distribución del consumo</h2><div id="bars"></div></div>
+</section>
+<section id="cargas" class="page">
+<div class="toolbar"><button onclick="add()">＋ Agregar equipo</button><button class="light" onclick="restore()">↻ Restaurar mis datos</button><button class="light" onclick="backup()">⬇ JSON</button><span>Todos los campos son editables.</span></div>
+<div class="tablewrap"><table id="loadTable"><thead><tr>
+<th>Ambiente</th><th>Equipo / circuito</th><th>Cant.</th><th>W/u</th><th>V</th><th>Fase</th><th>FP</th><th>FD</th><th>h/día</th><th>kWh/mes</th><th>MD kW</th><th>I A</th><th>Dato</th><th></th>
+</tr></thead><tbody></tbody></table></div>
+</section>
+<section id="consumo" class="page"><div class="panel"><h2>Consumo diario y mensual</h2><p>La corriente se calcula con FP. Para 1F: I=P/(V×FP); para 3F: I=P/(√3×V×FP).</p>
+<div class="tablewrap"><table id="consTable"><thead><tr><th>Equipo</th><th>W</th><th>FP</th><th>I A</th><th>kWh/día</th><th>kWh/mes</th><th>S/día</th><th>S/mes</th><th>Dato</th></tr></thead><tbody></tbody></table></div></div></section>
+<section id="normativa" class="page"><div class="panel"><h2>Normativa peruana y cuadro de cargas</h2>
+<div class="notice"><b>Precisión:</b> CAPECO es una entidad gremial; no sustituye al RNE ni al Código Nacional de Electricidad. Para el proyecto eléctrico se debe verificar la versión vigente del RNE EM.010 y CNE – Utilización.</div>
+<h3>Referencia CNE – Utilización 050-200</h3><p>Para viviendas unifamiliares, la regla 050-200 establece una metodología de carga básica por área y cargas adicionales. La aplicación muestra esta referencia como apoyo y mantiene FD/FP editables. No reemplaza el cálculo reglamentario de un proyecto firmado.</p>
+<div class="norm"><b>Concepto</b><b>Uso en la aplicación</b><span>Carga instalada</span><span>Suma de potencias nominales de los equipos/circuitos.</span><span>Factor de demanda</span><span>FD editable para estimar máxima demanda.</span><span>Factor de potencia</span><span>FP editable para convertir potencia activa a potencia aparente/corriente.</span><span>Máxima demanda</span><span>Carga instalada × FD.</span><span>Consumo</span><span>kWh = W × horas × cantidad × días / 1000.</span></div>
+<p class="hint">Fuentes: RNE EM.010 y Código Nacional de Electricidad – Utilización, Sección 050. Para presentación oficial, comprobar la edición vigente y el cálculo específico de la instalación.</p>
+</div></section>
+</main>
+<footer>Herramienta de análisis y apoyo de diseño. Verificar cálculos reglamentarios con profesional competente.</footer>
+<script src="app.js"></script>
+</body></html>
