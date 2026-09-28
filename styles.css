@@ -79,3 +79,5 @@ main,.page,.panel,.grid,.tablewrap{min-width:0;max-width:100%}
   #cargas .print-brand{display:flex;flex-direction:column;gap:3px}
   #cargas .print-logo{display:block;width:245px;height:auto;object-fit:contain;object-position:left center;margin-bottom:2px}
 }
+
+.app-toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:#123b61;color:#fff;padding:13px 20px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.22);font-weight:700;z-index:9999;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}.app-toast.show{opacity:1;transform:translate(-50%,0)}
