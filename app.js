@@ -1,4 +1,4 @@
-const KEY="hugo_cargas_v4",T=0.7723;
+const KEY="hugo_cargas_v5",T=0.7723;
 const measured=[
 ["TV MIRAY 43 MS43-E201","Normal",29.31,"mA","UT251C+","Lectura de pinza",6.45,70,"MEDICIÓN REAL con UT251C+. La lectura se conserva como corriente medida."],
 ["TV MIRAY 43 MS43-E201","Funcionamiento",394,"mA","UT251C+","Lectura de pinza",86.68,70,"MEDICIÓN REAL con UT251C+. VA = V × I es un cálculo de referencia; la potencia nominal se mantiene según placa."],
@@ -93,7 +93,7 @@ function updatePrintMeta(){
  set("printBill",(+S.p.bill||0).toFixed(2)+" kWh/mes");
  set("printTariff",(+S.p.tar||0).toFixed(4)+" S/kWh");
 }
-function draw(){syncTariff();drawRecommendations();drawReceipt();["voltage","system","tariff","days","area","bill"].forEach((id,i)=>document.getElementById(id).value=[S.p.v,S.p.sys,S.p.tar,S.p.days,S.p.area,S.p.bill][i]);drawLoads();drawMeasurements();drawCons();drawDash();drawAnalysis();updatePrintMeta()}
+function draw(){normalizeKnownLoads();syncTariff();drawRecommendations();drawReceipt();["voltage","system","tariff","days","area","bill"].forEach((id,i)=>document.getElementById(id).value=[S.p.v,S.p.sys,S.p.tar,S.p.days,S.p.area,S.p.bill][i]);drawLoads();drawMeasurements();drawCons();drawDash();drawAnalysis();updatePrintMeta()}
 function mfield(i,k){return '<input value="'+esc(S.m[i][k])+'" onchange="mf('+i+',\''+k+'\',this.value)">'}
 function mf(i,k,v){S.m[i][k]=v;save();draw()}
 function drawMeasurements(){let tb=document.querySelector("#measurementsTable tbody");if(!tb)return;tb.innerHTML=S.m.map((m,i)=>'<tr><td>'+mfield(i,"e")+'</td><td>'+mfield(i,"s")+'</td><td>'+mfield(i,"r")+'</td><td>'+mfield(i,"u")+'</td><td>'+mfield(i,"i")+'</td><td>'+mfield(i,"t")+'</td><td>'+((+m.va||0)?(+m.va).toFixed(2):"—")+'</td><td>'+((+m.pw||0)?(+m.pw).toFixed(2):"—")+'</td><td>'+mfield(i,"o")+'</td><td><button class="danger" onclick="S.m.splice('+i+',1);save();draw()">×</button></td></tr>').join("")}
@@ -103,7 +103,23 @@ function drawAnalysis(){let box=document.getElementById("analysisList");if(!box)
 function drawLoads(){let tb=document.querySelector("#loadTable tbody");tb.innerHTML=S.a.map((x,i)=>{let c=calc(x);return '<tr><td>'+field(i,"r")+'</td><td>'+field(i,"n")+'</td><td>'+field(i,"q")+'</td><td>'+((+x.w||0)===0?'—':field(i,"w"))+'</td><td>'+field(i,"v")+'</td><td><select onchange="edit('+i+',\'f\',this.value)"><option '+(x.f==="1F"?"selected":"")+' >1F</option><option '+(x.f==="3F"?"selected":"")+'>3F</option></select></td><td>'+field(i,"pf")+'</td><td>'+field(i,"fd")+'</td><td>'+field(i,"h")+'</td><td>'+c.k.toFixed(2)+'</td><td>'+c.demand.toFixed(2)+'</td><td>'+c.I.toFixed(2)+'</td><td>'+esc(x.d)+'</td><td><button class="danger" onclick="S.a.splice('+i+',1);save();draw()">×</button></td></tr>'}).join("")}
 function drawCons(){let tb=document.querySelector("#consTable tbody");let a=[...S.a].sort((x,y)=>calc(y).k-calc(x).k);tb.innerHTML=a.map(x=>{let c=calc(x);return '<tr><td>'+esc(x.n)+'</td><td>'+x.w+'</td><td>'+x.pf+'</td><td>'+c.I.toFixed(2)+'</td><td>'+c.day.toFixed(2)+'</td><td>'+c.k.toFixed(2)+'</td><td>S/ '+(c.day*S.p.tar).toFixed(2)+'</td><td>S/ '+c.cost.toFixed(2)+'</td><td><span class="tag">'+esc(x.d)+'</span></td></tr>'}).join("")}
 function drawDash(){let t=S.a.reduce((a,x)=>{let c=calc(x);a.i+=c.inst;a.k+=c.k;a.d+=c.demand;a.cost+=c.cost;return a},{i:0,k:0,d:0,cost:0});document.getElementById("kInst").textContent=(t.i/1000).toFixed(2)+" kW";document.getElementById("kDem").textContent=t.d.toFixed(2)+" kW";document.getElementById("kKwh").textContent=t.k.toFixed(2)+" kWh";document.getElementById("kCost").textContent="S/ "+t.cost.toFixed(2);document.getElementById("kBill").textContent="S/ "+(+S.p.billS||0).toFixed(2);document.getElementById("kDiff").textContent=(t.k-S.p.bill).toFixed(2)+" kWh";let top=[...S.a].sort((x,y)=>calc(y).k-calc(x).k).slice(0,8),mx=calc(top[0]||{w:1,q:1,h:1}).k||1;document.getElementById("top").innerHTML=top.slice(0,5).map(x=>'<p><b>'+esc(x.n)+'</b> — '+calc(x).k.toFixed(1)+' kWh/mes</p>').join("");document.getElementById("bars").innerHTML=top.map(x=>{let k=calc(x).k;return '<div class="bar"><span>'+esc(x.n)+'</span><div class="barline"><div class="fill" style="width:'+Math.max(2,k/mx*100)+'%"></div></div><b>'+k.toFixed(1)+'</b></div>'}).join("")}
-function add(){S.a.push({r:"Nuevo",n:"Nuevo equipo",q:1,w:100,v:S.p.v,f:"1F",pf:.9,fd:1,h:1,fixed:"",d:"ESTIMADO"});save();draw()}
+function normalizeKnownLoads(){
+ const known={
+  "Refrigeradora Samsung RT38K5930S8":{w:33.11,fixed:24,d:"ETIQUETA: 290 kWh/año → 24.2 kWh/mes; W promedio equivalente ≈33.11"},
+  "Congelador Miray CMV-380HF (vertical)":{w:32.19,fixed:35,d:"ETIQUETA: 282 kWh/año → 23.5 kWh/mes; W promedio equivalente ≈32.19; consumo ajustado a 35 kWh/mes por condiciones de instalación"}
+ };
+ S.a.forEach(x=>{const k=Object.keys(known).find(n=>String(x.n||"").startsWith(n));if(k){const v=known[k];if(!+x.w)x.w=v.w;if(x.fixed===""||x.fixed==null)x.fixed=v.fixed;if(!x.d||x.d==="ESTIMADO")x.d=v.d}});
+}
+function showToast(message){
+ let el=document.getElementById("appToast");
+ if(!el){el=document.createElement("div");el.id="appToast";el.className="app-toast";document.body.appendChild(el)}
+ el.textContent=message;el.classList.add("show");clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>el.classList.remove("show"),2600);
+}
+function add(){
+ const row={r:"Nuevo",n:"Nuevo equipo",q:1,w:100,v:S.p.v,f:"1F",pf:.9,fd:1,h:1,fixed:"",d:"ESTIMADO"};
+ S.a.push(row);save();draw();showToast("Nueva fila agregada. Complete los datos del equipo.");
+ setTimeout(()=>{const tr=document.querySelector("#loadTable tbody tr:last-child");tr?.scrollIntoView({behavior:"smooth",block:"center"});tr?.querySelector("input")?.focus()},80);
+}
 function backup(){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:"application/json"}));a.download="respaldo_cuadro_cargas.json";a.click()}
 function exportXLSX(){if(!window.XLSX){alert("Excel requiere conexión a Internet para cargar SheetJS.");return}let rows=S.a.map(x=>{let c=calc(x);return{Ambiente:x.r,Equipo:x.n,Cantidad:x.q,"W/u":x.w,V:x.v,Fase:x.f,FP:x.pf,FD:x.fd,"h/día":x.h,"kWh/mes":+c.k.toFixed(2),"S/día":+(c.day*S.p.tar).toFixed(2),"S/mes":+c.cost.toFixed(2),"Demanda_kW":+c.demand.toFixed(2),"Corriente_A":+c.I.toFixed(2),Dato:x.d}});let wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),"Cuadro de cargas");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(S.m),"Mediciones");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows.map(x=>({Equipo:x.Equipo,W:x["W/u"],FP:x.FP,FD:x.FD,I_A:x.Corriente_A,kWh_dia:x["kWh/mes"]/S.p.days,kWh_mes:x["kWh/mes"],S_dia:x["S/día"],S_mes:x["S/mes"],Dato:x.Dato}))),"Consumo por equipo");XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Parámetro","Valor"],["Tensión V",S.p.v],["Sistema",S.p.sys],["Tarifa S/kWh",S.p.tar],["Área m²",S.p.area],["Consumo real kWh/mes",S.p.bill]]),"Parámetros");XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Base","Aplicación"],["RNE EM.010","Instalaciones eléctricas interiores"],["CNE Utilización 050-200","Viviendas unifamiliares; metodología de carga y demanda"],["Nota","Verificar edición vigente y cálculo final con profesional competente. CAPECO no sustituye al RNE/CNE."]]),"Normativa Perú");XLSX.writeFile(wb,"Cuadro_Cargas_Hugo.xlsx")}
 
