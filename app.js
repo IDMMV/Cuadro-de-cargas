@@ -79,7 +79,7 @@ function tab(id){document.querySelectorAll(".page").forEach(x=>x.classList.remov
 function totalModel(){return S.a.reduce((z,x)=>z+calcRaw(x),0)}
 function calcRaw(x){let w=+x.w||0,q=+x.q||0,h=+x.h||0,d=S.p.days;return x.fixed!==""&&x.fixed!=null?+x.fixed:(w*q*h*d/1000)}
 function syncTariff(){const k=totalModel();const demand=S.a.reduce((z,x)=>z+(+x.w||0)*(+x.q||0)*(+x.fd||0)/1000,0);const r=estimateTariff(S.p,k,demand);S.p.tar=r.avg||0;const el=document.getElementById("tariff");if(el)el.value=(r.avg||0).toFixed(4);return r}
-function calc(x){let w=+x.w||0,q=+x.q||0,h=+x.h||0,d=S.p.days,pf=Math.max(.01,+x.pf||1),fd=+x.fd||0,v=+x.v||S.p.v;let inst=w*q;let k=x.fixed!==""&&x.fixed!=null?+x.fixed:inst*h*d/1000;let I=x.f==="3F"?inst/(Math.sqrt(3)*v*pf):inst/(v*pf);return{inst,k,day:k/d,cost:k*S.p.tar,demand:inst*fd/1000,I}}
+function calc(x){let w=+x.w||0,q=+x.q||0,h=+x.h||0,d=S.p.days,pf=Math.max(.01,+x.pf||1),fd=+x.fd||0,v=+x.v||S.p.v;let inst=w*q;let hasDesignPower=+x.w>0;let k=x.fixed!==""&&x.fixed!=null?+x.fixed:inst*h*d/1000;let I=hasDesignPower?(x.f==="3F"?inst/(Math.sqrt(3)*v*pf):inst/(v*pf)):0;return{inst,k,day:k/d,cost:k*S.p.tar,demand:hasDesignPower?inst*fd/1000:0,I,hasDesignPower}}
 function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll('"',"&quot;").replaceAll("<","&lt;").replaceAll(">","&gt;")}
 function edit(i,k,v){S.a[i][k]=(k==="r"||k==="n"||k==="f"||k==="d"||k==="fixed")?v:+v;save();draw()}
 function field(i,k){let x=S.a[i];let display=(k==="w"&&(+x[k]||0)===0)?"":esc(x[k]);return '<input value="'+display+'" placeholder="—" onchange="edit('+i+',\''+k+'\',this.value)">'}
