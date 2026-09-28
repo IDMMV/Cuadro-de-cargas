@@ -12,7 +12,7 @@
 <div><button onclick="exportXLSX()">⬇ Excel</button><button class="light" onclick="window.print()">🖨 PDF</button></div></header>
 <nav>
 <button class="tab active" data-tab="resumen">Resumen</button><button class="tab" data-tab="cargas">Cuadro de cargas</button>
-<button class="tab" data-tab="measurements">📏 Mediciones</button><button class="tab" data-tab="consumo">Consumo por equipo</button><button class="tab" data-tab="recibo">🧾 Simulador de recibo</button><button class="tab" data-tab="analysis">Análisis</button><button class="tab" data-tab="recommendations">💡 Recomendaciones</button><button class="tab" data-tab="normativa">Normativa Perú</button>
+<button class="tab" data-tab="measurements">📏 Mediciones</button><button class="tab" data-tab="standby">🔌 Standby y ahorro</button><button class="tab" data-tab="consumo">Consumo por equipo</button><button class="tab" data-tab="recibo">🧾 Simulador de recibo</button><button class="tab" data-tab="analysis">Análisis</button><button class="tab" data-tab="recommendations">💡 Recomendaciones</button><button class="tab" data-tab="normativa">Normativa Perú</button>
 </nav>
 <main>
 <section id="resumen" class="page active">
@@ -57,7 +57,7 @@
 </div>
 </section>
 <section id="measurements" class="page"><div class="panel"><h2>📏 Mediciones realizadas</h2><div class="notice"><b>Importante:</b> las lecturas de la UT251C+ se conservan como corriente medida. No se convierten automáticamente en kWh. Las lecturas de fuga se mantienen como diagnóstico.</div><div class="toolbar"><button onclick="addMeasurement()">＋ Agregar medición</button><button class="light" onclick="exportMeasurements()">⬇ CSV</button></div><div class="tablewrap"><table id="measurementsTable"><thead><tr><th>Equipo / circuito</th><th>Estado</th><th>Lectura</th><th>Unidad</th><th>Instrumento</th><th>Tipo</th><th>VA ref.</th><th>W placa/cálculo</th><th>Relación / observación</th><th></th></tr></thead><tbody></tbody></table></div></div><div class="panel"><h2>Relación medición → cálculo</h2><div class="relation-grid"><div><b>1. Medición</b><span>Valor observado y condición.</span></div><div><b>2. Cuadro de cargas</b><span>W, FP, FD y corriente para diseño.</span></div><div><b>3. Consumo</b><span>kWh según potencia y horas.</span></div><div><b>4. Validación</b><span>Las diferencias grandes quedan marcadas para revisar.</span></div></div></div></section>
-<section id="recibo" class="page"><div class="panel"><h2>🧾 Simulador de Recibo</h2><p class="hint">El consumo se toma del Cuadro de Cargas. La tarifa se selecciona del pliego Pluz/Osinergmin vigente para Lima Norte. Los valores publicados por Pluz incluyen IGV.</p><div class="form tariff-form">
+<section id="standby" class="page"><div class="panel"><h2>🔌 Consumo en reposo y ahorro potencial</h2><p class="hint">Separa las mediciones de equipos conectados/en reposo de las mediciones en funcionamiento. El FP es editable por medición; si no se conoce, la aplicación propone un valor de referencia y lo identifica como sugerido.</p><div id="standbySummary"></div></div><div class="panel"><h2>📱 Captura desde celular</h2><p class="hint">La captura móvil se diseñará como un flujo simple: equipo → estado → corriente medida → FP (medido, placa o sugerido) → horas de uso → guardar. El escritorio queda para revisión técnica, consumo, diagnóstico y reporte.</p></div></section><section id="recibo" class="page"><div class="panel"><h2>🧾 Simulador de Recibo</h2><p class="hint">El consumo se toma del Cuadro de Cargas. La tarifa se selecciona del pliego Pluz/Osinergmin vigente para Lima Norte. Los valores publicados por Pluz incluyen IGV.</p><div class="form tariff-form">
 <label>Opción tarifaria<select id="tariffCode"><option>BT2</option><option>BT3</option><option>BT4</option><option>BT5A</option><option selected>BT5B</option><option>BT5C_AP</option><option>BT5D</option><option>BT5E</option><option>BT5F</option><option>BT5I</option><option>BT6</option></select></label>
 <label>Tipo de cliente<select id="tariffCustomer"><option selected value="residencial">Residencial</option><option value="noResidencial">No residencial</option></select></label>
 <label>Fecha de referencia<input id="tariffDate" type="date" value="2026-09-28"></label>
@@ -80,5 +80,5 @@
 </div></section>
 </main>
 <footer>Herramienta de análisis y apoyo de diseño. Verificar cálculos reglamentarios con profesional competente.</footer>
-<script src="app.js?v=20260928-10"></script>
+<script src="app.js?v=20260928-11"></script>
 </body></html>
