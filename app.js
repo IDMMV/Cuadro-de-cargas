@@ -105,8 +105,8 @@ function drawCons(){let tb=document.querySelector("#consTable tbody");let a=[...
 function drawDash(){let t=S.a.reduce((a,x)=>{let c=calc(x);a.i+=c.inst;a.k+=c.k;a.d+=c.demand;a.cost+=c.cost;return a},{i:0,k:0,d:0,cost:0});document.getElementById("kInst").textContent=(t.i/1000).toFixed(2)+" kW";document.getElementById("kDem").textContent=t.d.toFixed(2)+" kW";document.getElementById("kKwh").textContent=t.k.toFixed(2)+" kWh";document.getElementById("kCost").textContent="S/ "+t.cost.toFixed(2);document.getElementById("kBill").textContent="S/ "+(+S.p.billS||0).toFixed(2);document.getElementById("kDiff").textContent=(t.k-S.p.bill).toFixed(2)+" kWh";let top=[...S.a].sort((x,y)=>calc(y).k-calc(x).k).slice(0,8),mx=calc(top[0]||{w:1,q:1,h:1}).k||1;document.getElementById("top").innerHTML=top.slice(0,5).map(x=>'<p><b>'+esc(x.n)+'</b> — '+calc(x).k.toFixed(1)+' kWh/mes</p>').join("");document.getElementById("bars").innerHTML=top.map(x=>{let k=calc(x).k;return '<div class="bar"><span>'+esc(x.n)+'</span><div class="barline"><div class="fill" style="width:'+Math.max(2,k/mx*100)+'%"></div></div><b>'+k.toFixed(1)+'</b></div>'}).join("")}
 function normalizeKnownLoads(){
  const known={
-  "Refrigeradora Samsung RT38K5930S8":{w:33.11,fixed:24,d:"ETIQUETA: 290 kWh/año → 24.2 kWh/mes; W promedio equivalente ≈33.11"},
-  "Congelador Miray CMV-380HF (vertical)":{w:32.19,fixed:35,d:"ETIQUETA: 282 kWh/año → 23.5 kWh/mes; W promedio equivalente ≈32.19; consumo ajustado a 35 kWh/mes por condiciones de instalación"}
+  "Refrigeradora Samsung RT38K5930S8":{w:33.11,fixed:24,d:"ETIQUETA: 290 kWh/año → 24.2 kWh/mes; P/u pendiente de placa o corriente nominal"},
+  "Congelador Miray CMV-380HF (vertical)":{w:32.19,fixed:35,d:"ETIQUETA: 282 kWh/año → 23.5 kWh/mes; P/u pendiente de placa o corriente nominal; consumo ajustado a 35 kWh/mes por condiciones de instalación"}
  };
  S.a.forEach(x=>{const k=Object.keys(known).find(n=>String(x.n||"").startsWith(n));if(k){const v=known[k];if(x.fixed===""||x.fixed==null)x.fixed=v.fixed;if(!x.d||x.d==="ESTIMADO")x.d=v.d}});
 }
