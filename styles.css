@@ -81,3 +81,5 @@ main,.page,.panel,.grid,.tablewrap{min-width:0;max-width:100%}
 }
 
 .app-toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:#123b61;color:#fff;padding:13px 20px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.22);font-weight:700;z-index:9999;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}.app-toast.show{opacity:1;transform:translate(-50%,0)}
+
+.standby-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0}.standby-kpis>div{background:#f6f9fc;border:1px solid #dbe4ed;border-radius:10px;padding:14px}.standby-kpis small{display:block;color:#64748b}.standby-kpis b{display:block;font-size:22px;margin-top:6px;color:#123b61}.standby-table{min-width:900px}.standby-table td,.standby-table th{vertical-align:middle}@media(max-width:700px){.standby-kpis{grid-template-columns:1fr}.standby-table{min-width:800px}}
