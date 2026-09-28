@@ -25,7 +25,7 @@ const TARIFAS_PLUZ_2026_09 = {
   ]},
   BT5F:{tipo:"2E",residencial:true,fijo:5.11,hp:1.2706,hfp:.5690,hp30:.8694,hfp30:.3894,hpExceso:1.2421,hfpExceso:.5563},
   BT5I:{tipo:"3E",residencial:true,fijo:5.11,hp:.8297,media:.6292,base:.6301,hp30:.5677,media30:.4305,base30:.4312,hpExceso:.8110,mediaExceso:.6150,baseExceso:.6160},
-  BT6:{tipo:"1P",fijo:2.74,potenciaW:.03391}
+  BT6:{tipo:"1P",fijo:2.74,potenciaW:.3391}
 };
 
 function clampNum(n,min=0){n=Number(n);return Number.isFinite(n)?Math.max(min,n):0}
