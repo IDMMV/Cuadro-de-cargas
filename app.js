@@ -108,7 +108,7 @@ function normalizeKnownLoads(){
   "Refrigeradora Samsung RT38K5930S8":{w:33.11,fixed:24,d:"ETIQUETA: 290 kWh/año → 24.2 kWh/mes; W promedio equivalente ≈33.11"},
   "Congelador Miray CMV-380HF (vertical)":{w:32.19,fixed:35,d:"ETIQUETA: 282 kWh/año → 23.5 kWh/mes; W promedio equivalente ≈32.19; consumo ajustado a 35 kWh/mes por condiciones de instalación"}
  };
- S.a.forEach(x=>{const k=Object.keys(known).find(n=>String(x.n||"").startsWith(n));if(k){const v=known[k];if(!+x.w)x.w=v.w;if(x.fixed===""||x.fixed==null)x.fixed=v.fixed;if(!x.d||x.d==="ESTIMADO")x.d=v.d}});
+ S.a.forEach(x=>{const k=Object.keys(known).find(n=>String(x.n||"").startsWith(n));if(k){const v=known[k];if(x.fixed===""||x.fixed==null)x.fixed=v.fixed;if(!x.d||x.d==="ESTIMADO")x.d=v.d}});
 }
 function showToast(message){
  let el=document.getElementById("appToast");
