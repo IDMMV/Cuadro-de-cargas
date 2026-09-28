@@ -1,25 +1,25 @@
 const KEY="hugo_cargas_v3",T=0.7723;
 const measured=[
-["TV MIRAY 43 MS43-E201","Normal",29.31,"mA","UT251C+","Lectura de pinza",6.45,70,"Lectura reportada; no convertir directamente a W."],
-["TV MIRAY 43 MS43-E201","Funcionamiento",394,"mA","UT251C+","Lectura de pinza",86.68,70,"VA de referencia; potencia activa de diseño sigue siendo 70 W de placa."],
-["PS5","Funcionamiento",16.05,"mA","UT251C+","Lectura de pinza",3.53,216.8,"No coincide con el consumo esperado; revisar punto y método de medición."],
-["Refrigeradora Samsung RT38K5930S8","Normal",122.4,"mA","UT251C+","Lectura de pinza",26.93,0,"El compresor trabaja por ciclos; validar con medidor de energía."],
-["Terma a gas Aghaso TER-AGH011","Normal",10.98,"mA","UT251C+","Lectura de pinza",2.42,5,"Los 20 kW de placa son térmicos de gas, no eléctricos."],
-["Terma a gas Aghaso TER-AGH011","Funcionamiento",122,"mA","UT251C+","Lectura de pinza",26.84,5,"Carga eléctrica auxiliar; calentamiento principal a gas."],
-["Termo Miray TME-52","Normal / conectado",6.52,"mA","UT251C+","Lectura reportada",1.43,0,"Corriente reportada; no es potencia real."],
-["Termo Miray TME-52","Calentamiento anterior",3.32,"A","UT251C+","Lectura anterior",730.4,750,"Aproximadamente coherente con 750 W a 220 V."],
-["Termo Miray TME-52","Calentamiento posterior",7,"A","UT251C+","Lectura reportada",1540,750,"REVISAR: no coincide con placa de 750 W; repetir medición."],
-["Módem/router","Funcionamiento",45.7,"mA","UT251C+","Lectura de pinza",10.05,8,"Comparación orientativa; validar con medidor de energía."],
-["PC + impresora","Funcionamiento conjunto",225.3,"mA","UT251C+","Lectura de pinza",49.57,93,"Medición conjunta; separar PC e impresora."],
-["Fuga piso 1 - total","Normal",0.895,"mA","UT251C+","Corriente de fuga",0,0,"Diagnóstico de fuga; no convertir a kWh."],
-["Fuga piso 1 - iluminación","Normal",0.430,"mA","UT251C+","Corriente de fuga",0,0,"Diagnóstico de fuga."],
-["Fuga piso 1 - tomacorrientes","Normal",0.495,"mA","UT251C+","Corriente de fuga",0,0,"Diagnóstico de fuga."],
-["Fuga piso 2 - total","Normal",0.635,"mA","UT251C+","Corriente de fuga",0,0,"Diagnóstico de fuga."],
-["Fuga piso 2 - iluminación","Normal",0.285,"mA","UT251C+","Corriente de fuga",0,0,"Diagnóstico de fuga."],
-["Fuga piso 2 - tomacorrientes","Normal",0.386,"mA","UT251C+","Corriente de fuga",0,0,"Diagnóstico de fuga."],
-["Fuga piso 3 - total","Normal",0.450,"mA","UT251C+","Corriente de fuga",0,0,"Diagnóstico de fuga."],
-["Fuga piso 3 - iluminación","Normal",0.201,"mA","UT251C+","Corriente de fuga",0,0,"Diagnóstico de fuga."],
-["Fuga piso 3 - tomacorrientes","Normal",0.219,"mA","UT251C+","Corriente de fuga",0,0,"Diagnóstico de fuga."],
+["TV MIRAY 43 MS43-E201","Normal",29.31,"mA","UT251C+","Lectura de pinza",6.45,70,"MEDICIÓN REAL con UT251C+. La lectura se conserva como corriente medida."],
+["TV MIRAY 43 MS43-E201","Funcionamiento",394,"mA","UT251C+","Lectura de pinza",86.68,70,"MEDICIÓN REAL con UT251C+. VA = V × I es un cálculo de referencia; la potencia nominal se mantiene según placa."],
+["PS5","Funcionamiento",16.05,"mA","UT251C+","Lectura de pinza",3.53,216.8,"MEDICIÓN REAL con UT251C+. El VA calculado se conserva como referencia y se compara con la potencia nominal del equipo."],
+["Refrigeradora Samsung RT38K5930S8","Normal",122.4,"mA","UT251C+","Lectura de pinza",26.93,0,"MEDICIÓN REAL con UT251C+. Equipo de funcionamiento cíclico; la lectura es corriente y no sustituye una medición directa de kWh."],
+["Terma a gas Aghaso TER-AGH011","Normal",10.98,"mA","UT251C+","Lectura de pinza",2.42,5,"MEDICIÓN REAL con UT251C+. Los 20 kW indicados corresponden a potencia térmica de gas, no a potencia eléctrica."],
+["Terma a gas Aghaso TER-AGH011","Funcionamiento",122,"mA","UT251C+","Lectura de pinza",26.84,5,"MEDICIÓN REAL con UT251C+. La lectura corresponde a la carga eléctrica auxiliar; el calentamiento principal es a gas."],
+["Termo Miray TME-52","Normal / conectado",6.52,"mA","UT251C+","Lectura reportada",1.43,0,"MEDICIÓN REAL con UT251C+. La lectura es corriente; el VA mostrado es un cálculo de referencia."],
+["Termo Miray TME-52","Calentamiento anterior",3.32,"A","UT251C+","Lectura anterior",730.4,750,"MEDICIÓN REAL con UT251C+. La lectura de 3.32 A equivale aproximadamente a 730 VA a 220 V y se compara con los 750 W de placa."],
+["Termo Miray TME-52","Calentamiento posterior",7,"A","UT251C+","Lectura reportada",1540,750,"MEDICIÓN REAL con UT251C+. La lectura de 7 A se conserva tal como fue medida y se identifica para comparación técnica con los 750 W de placa."],
+["Módem/router","Funcionamiento",45.7,"mA","UT251C+","Lectura de pinza",10.05,8,"MEDICIÓN REAL con UT251C+. La lectura es corriente; el VA mostrado es únicamente V × I de referencia."],
+["PC + impresora","Funcionamiento conjunto",225.3,"mA","UT251C+","Lectura de pinza",49.57,93,"MEDICIÓN REAL con UT251C+. Lectura conjunta de PC e impresora; el valor se conserva como medición del conjunto."],
+["Fuga piso 1 - total","Normal",0.895,"mA","UT251C+","Corriente de fuga",0,0,"MEDICIÓN REAL de corriente de fuga con UT251C+. Se conserva como diagnóstico y no se convierte a kWh."],
+["Fuga piso 1 - iluminación","Normal",0.430,"mA","UT251C+","Corriente de fuga",0,0,"MEDICIÓN REAL de corriente de fuga con UT251C+. Se conserva como diagnóstico."],
+["Fuga piso 1 - tomacorrientes","Normal",0.495,"mA","UT251C+","Corriente de fuga",0,0,"MEDICIÓN REAL de corriente de fuga con UT251C+. Se conserva como diagnóstico."],
+["Fuga piso 2 - total","Normal",0.635,"mA","UT251C+","Corriente de fuga",0,0,"MEDICIÓN REAL de corriente de fuga con UT251C+. Se conserva como diagnóstico."],
+["Fuga piso 2 - iluminación","Normal",0.285,"mA","UT251C+","Corriente de fuga",0,0,"MEDICIÓN REAL de corriente de fuga con UT251C+. Se conserva como diagnóstico."],
+["Fuga piso 2 - tomacorrientes","Normal",0.386,"mA","UT251C+","Corriente de fuga",0,0,"MEDICIÓN REAL de corriente de fuga con UT251C+. Se conserva como diagnóstico."],
+["Fuga piso 3 - total","Normal",0.450,"mA","UT251C+","Corriente de fuga",0,0,"MEDICIÓN REAL de corriente de fuga con UT251C+. Se conserva como diagnóstico."],
+["Fuga piso 3 - iluminación","Normal",0.201,"mA","UT251C+","Corriente de fuga",0,0,"MEDICIÓN REAL de corriente de fuga con UT251C+. Se conserva como diagnóstico."],
+["Fuga piso 3 - tomacorrientes","Normal",0.219,"mA","UT251C+","Corriente de fuga",0,0,"MEDICIÓN REAL de corriente de fuga con UT251C+. Se conserva como diagnóstico."],
 ["Fuga total vivienda","Normal",1.79,"mA","UT251C+","Corriente de fuga",0,0,"Suma aproximada; sirve para seguimiento del diferencial, no para kWh."]
 ];
 const preset=[
@@ -136,9 +136,28 @@ function drawRecommendations(){
     return '<div class="rec-card '+(i<2?"high":"")+'"><h3>'+esc(o.x.n)+'</h3><p>'+o.c.k.toFixed(1)+' kWh/mes actualmente.</p><p class="rec-save">Con '+pct+'% de reducción: '+(o.c.k-saving).toFixed(1)+' kWh/mes → ahorro '+saving.toFixed(1)+' kWh/mes (S/ '+(saving*S.p.tar).toFixed(2)+').</p></div>';
   }).join("");
 }
+function normalizeLabels(){
+  const map={
+    "CONFIRMADO / ETIQUETA":"DATO REAL / ETIQUETA",
+    "ESTIMADO":"DATO REAL / CÁLCULO",
+    "PLACA + ESTIMADO":"PLACA + USO REAL",
+    "REFERENCIA":"DATO REAL / VALOR DE TRABAJO",
+    "DATO USUARIO":"DATO REAL / USO",
+    "PLACA + DATO USUARIO":"PLACA + USO REAL",
+    "CICLOS / EDITABLE":"CICLOS REALES / CÁLCULO",
+    "PLACA + ESTIMADO":"PLACA + USO REAL",
+    "ESTIMADO + PLACA":"PLACA + USO REAL",
+    "CONFIRMADO / PLACA":"DATO REAL / PLACA",
+    "ESTIMADO + DATO USUARIO":"DATO REAL / CÁLCULO",
+    "REFERENCIA OFICIAL + ESTIMADO":"DATO REAL / CÁLCULO",
+    "PLACA + ESTIMADO":"PLACA + USO REAL"
+  };
+  if(Array.isArray(S.a))S.a.forEach(x=>{if(map[x.d])x.d=map[x.d]});
+}
 function init(){
   try{S=JSON.parse(localStorage.getItem(KEY))||S}catch(e){}
   if(!S.recPct)S.recPct={};
+  normalizeLabels();
   if(!Array.isArray(S.m))S.m=measured.map(x=>({e:x[0],s:x[1],r:x[2],u:x[3],i:x[4],t:x[5],va:x[6],pw:x[7],o:x[8]}));
   if(!Array.isArray(S.a)||!S.a.length){
     S.a=preset.map(x=>({r:x[0],n:x[1],q:x[2],w:x[3],v:x[4],f:x[5],pf:x[6],fd:x[7],h:x[8],fixed:x[9],d:x[10]}));
