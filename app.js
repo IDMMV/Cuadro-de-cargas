@@ -99,7 +99,34 @@ function measurementFP(m){const v=+m.fp||0;return v>0?Math.min(1,Math.max(.5,v))
 function measurementVA(m){return currentA(m)*(+S.p.v||220)}
 function measurementW(m){return measurementVA(m)*measurementFP(m)}
 function measurementState(m){const s=String(m.s||"").toLowerCase();return /reposo|normal|standby|conectado/.test(s)?"standby":/funcion|calent|uso|activo/.test(s)?"operativo":"otro"}
-function drawStandby(){const box=document.getElementById("standbySummary");if(!box)return;const groups={};S.m.forEach(m=>{const state=measurementState(m);if(state==="otro")return;const key=String(m.e||"Equipo");groups[key]=groups[key]||{name:key,standby:null,operativo:null};if(state==="standby")groups[key].standby=m;if(state==="operativo")groups[key].operativo=m});const rows=Object.values(groups).filter(g=>g.standby||g.operativo);let total=0,save=0,tariff=+S.p.tar||0;const html=rows.map(g=>{const sm=g.standby,fp=measurementFP(sm||g.operativo),sw=sm?measurementW(sm):0,standbyKwh=sw*24*(+S.p.days||30)/1000;const action=sw>0&&standbyKwh>=.5?"Evaluar desconexión fuera de uso":"Consumo de espera bajo";total+=standbyKwh;save+=standbyKwh*tariff;return '<tr><td><b>'+esc(g.name)+'</b></td><td>'+(sm?currentA(sm).toFixed(3):"—")+' A</td><td>'+sw.toFixed(1)+' W</td><td>'+fp.toFixed(2)+(sm&&+sm.fp>0?' · editable':' · sugerido')+'</td><td>'+standbyKwh.toFixed(2)+' kWh/mes</td><td>'+money(standbyKwh*tariff)+'</td><td>'+action+'</td></tr>'}).join("");box.innerHTML='<div class="standby-kpis"><div><small>Standby identificado</small><b>'+total.toFixed(2)+' kWh/mes</b></div><div><small>Ahorro potencial</small><b>'+money(save)+'/mes</b></div><div><small>Equipos analizados</small><b>'+rows.length+'</b></div></div><div class="tablewrap"><table class="standby-table"><thead><tr><th>Equipo</th><th>A medido</th><th>W estimada</th><th>FP</th><th>Standby kWh/mes</th><th>Costo</th><th>Acción</th></tr></thead><tbody>'+html+'</tbody></table></div><p class="hint">La energía de standby es una estimación basada en corriente medida y FP. Para validar kWh directamente se recomienda medición de energía. No desconectar equipos esenciales sin evaluar su función.</p>}
+function drawStandby(){
+ const box=document.getElementById("standbySummary");
+ if(!box)return;
+ const groups={};
+ S.m.forEach(m=>{
+  const state=measurementState(m);
+  if(state==="otro")return;
+  const key=String(m.e||"Equipo");
+  groups[key]=groups[key]||{name:key,standby:null,operativo:null};
+  if(state==="standby")groups[key].standby=m;
+  if(state==="operativo")groups[key].operativo=m;
+ });
+ const rows=Object.values(groups).filter(g=>g.standby||g.operativo);
+ let total=0,save=0;
+ const tariff=+S.p.tar||0;
+ let html="";
+ rows.forEach(g=>{
+  const sm=g.standby;
+  const fp=measurementFP(sm||g.operativo);
+  const sw=sm?measurementW(sm):0;
+  const standbyKwh=sw*24*(+S.p.days||30)/1000;
+  const action=sw>0&&standbyKwh>=.5?"Evaluar desconexión fuera de uso":"Consumo de espera bajo";
+  total+=standbyKwh;
+  save+=standbyKwh*tariff;
+  html+=`<tr><td><b>${esc(g.name)}</b></td><td>${sm?currentA(sm).toFixed(3):"—"} A</td><td>${sw.toFixed(1)} W</td><td>${fp.toFixed(2)}${sm&&+sm.fp>0?" · editable":" · sugerido"}</td><td>${standbyKwh.toFixed(2)} kWh/mes</td><td>${money(standbyKwh*tariff)}</td><td>${action}</td></tr>`;
+ });
+ box.innerHTML=`<div class="standby-kpis"><div><small>Standby identificado</small><b>${total.toFixed(2)} kWh/mes</b></div><div><small>Ahorro potencial</small><b>${money(save)}/mes</b></div><div><small>Equipos analizados</small><b>${rows.length}</b></div></div><div class="tablewrap"><table class="standby-table"><thead><tr><th>Equipo</th><th>A medido</th><th>W estimada</th><th>FP</th><th>Standby kWh/mes</th><th>Costo</th><th>Acción</th></tr></thead><tbody>${html}</tbody></table></div><p class="hint">La energía de standby es una estimación basada en corriente medida y FP. Para validar kWh directamente se recomienda medición de energía. No desconectar equipos esenciales sin evaluar su función.</p>`;
+}
 function draw(){normalizeKnownLoads();syncTariff();drawRecommendations();drawReceipt();drawStandby();["voltage","system","tariff","days","area","bill"].forEach((id,i)=>document.getElementById(id).value=[S.p.v,S.p.sys,S.p.tar,S.p.days,S.p.area,S.p.bill][i]);drawLoads();drawMeasurements();drawCons();drawDash();drawAnalysis();updatePrintMeta()}
 function mfield(i,k){return '<input value="'+esc(S.m[i][k])+'" onchange="mf('+i+',\''+k+'\',this.value)">'}
 function mf(i,k,v){S.m[i][k]=(k==="fp"||k==="r")?(+v||0):v;save();draw()}
