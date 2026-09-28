@@ -1,4 +1,4 @@
-const KEY="hugo_cargas_v5",T=0.7723;
+const KEY="hugo_cargas_v6",T=0.7723;
 const measured=[
 ["TV MIRAY 43 MS43-E201","Normal",29.31,"mA","UT251C+","Lectura de pinza",6.45,70,"MEDICIÓN REAL con UT251C+. La lectura se conserva como corriente medida."],
 ["TV MIRAY 43 MS43-E201","Funcionamiento",394,"mA","UT251C+","Lectura de pinza",86.68,70,"MEDICIÓN REAL con UT251C+. VA = V × I es un cálculo de referencia; la potencia nominal se mantiene según placa."],
