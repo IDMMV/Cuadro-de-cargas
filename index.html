@@ -5,22 +5,23 @@
 <title>Hugo | Cuadro de Cargas y Consumo</title>
 <link rel="stylesheet" href="styles.css">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="tarifas.js"></script>
 </head>
 <body>
 <header><div><h1>⚡ Hugo · Cuadro de Cargas</h1><p>Consumo · máxima demanda · FP · FD · costos · normativa Perú</p></div>
 <div><button onclick="exportXLSX()">⬇ Excel</button><button class="light" onclick="window.print()">🖨 PDF</button></div></header>
 <nav>
 <button class="tab active" data-tab="resumen">Resumen</button><button class="tab" data-tab="cargas">Cuadro de cargas</button>
-<button class="tab" data-tab="measurements">📏 Mediciones</button><button class="tab" data-tab="consumo">Consumo por equipo</button><button class="tab" data-tab="analysis">Análisis</button><button class="tab" data-tab="recommendations">💡 Recomendaciones</button><button class="tab" data-tab="normativa">Normativa Perú</button>
+<button class="tab" data-tab="measurements">📏 Mediciones</button><button class="tab" data-tab="consumo">Consumo por equipo</button><button class="tab" data-tab="recibo">🧾 Simulador de recibo</button><button class="tab" data-tab="analysis">Análisis</button><button class="tab" data-tab="recommendations">💡 Recomendaciones</button><button class="tab" data-tab="normativa">Normativa Perú</button>
 </nav>
 <main>
 <section id="resumen" class="page active">
-<div class="cards"><article><small>Potencia instalada</small><b id="kInst">0</b></article><article><small>Máxima demanda</small><b id="kDem">0</b></article><article><small>Consumo mensual</small><b id="kKwh">0</b></article><article><small>Costo energía</small><b id="kCost">0</b></article><article><small>Recibo real</small><b id="kBill">331</b></article><article><small>Diferencia</small><b id="kDiff">0</b></article></div>
+<div class="cards"><article><small>Potencia instalada</small><b id="kInst">0</b></article><article><small>Máxima demanda</small><b id="kDem">0</b></article><article><small>Consumo mensual</small><b id="kKwh">0</b></article><article><small>Costo energía</small><b id="kCost">0</b></article><article><small>Recibo real</small><b id="kBill">S/ 287.00</b></article><article><small>Diferencia</small><b id="kDiff">0</b></article></div>
 <div class="grid">
 <div class="panel"><h2>Parámetros</h2><div class="form">
 <label>Tensión (V)<input id="voltage" type="number" value="220"></label>
 <label>Sistema<select id="system"><option>1F</option><option selected>3F</option></select></label>
-<label>Tarifa S/kWh<input id="tariff" type="number" step=".0001" value=".6545"></label>
+<label>Tarifa efectiva (S/kWh)<input id="tariff" type="number" step=".0001" value=".7723" readonly></label>
 <label>Días/mes<input id="days" type="number" value="30"></label>
 <label>Área m²<input id="area" type="number" value="360"></label>
 <label>Consumo real kWh/mes<input id="bill" type="number" value="331"></label></div></div>
@@ -34,7 +35,16 @@
 </tr></thead><tbody></tbody></table></div>
 </section>
 <section id="measurements" class="page"><div class="panel"><h2>📏 Mediciones realizadas</h2><div class="notice"><b>Importante:</b> las lecturas de la UT251C+ se conservan como corriente medida. No se convierten automáticamente en kWh. Las lecturas de fuga se mantienen como diagnóstico.</div><div class="toolbar"><button onclick="addMeasurement()">＋ Agregar medición</button><button class="light" onclick="exportMeasurements()">⬇ CSV</button></div><div class="tablewrap"><table id="measurementsTable"><thead><tr><th>Equipo / circuito</th><th>Estado</th><th>Lectura</th><th>Unidad</th><th>Instrumento</th><th>Tipo</th><th>VA ref.</th><th>W placa/cálculo</th><th>Relación / observación</th><th></th></tr></thead><tbody></tbody></table></div></div><div class="panel"><h2>Relación medición → cálculo</h2><div class="relation-grid"><div><b>1. Medición</b><span>Valor observado y condición.</span></div><div><b>2. Cuadro de cargas</b><span>W, FP, FD y corriente para diseño.</span></div><div><b>3. Consumo</b><span>kWh según potencia y horas.</span></div><div><b>4. Validación</b><span>Las diferencias grandes quedan marcadas para revisar.</span></div></div></div></section>
-<section id="analysis" class="page"><div class="panel"><h2>📊 Análisis y reducción</h2><p class="hint">Escenario orientativo de reducción. Modifica las horas de uso para comprobar el efecto.</p><div id="analysisList"></div></div></section>
+<section id="recibo" class="page"><div class="panel"><h2>🧾 Simulador de Recibo</h2><p class="hint">El consumo se toma del Cuadro de Cargas. La tarifa se selecciona del pliego Pluz/Osinergmin vigente para Lima Norte. Los valores publicados por Pluz incluyen IGV.</p><div class="form tariff-form">
+<label>Opción tarifaria<select id="tariffCode"><option>BT2</option><option>BT3</option><option>BT4</option><option>BT5A</option><option selected>BT5B</option><option>BT5C_AP</option><option>BT5D</option><option>BT5E</option><option>BT5F</option><option>BT5I</option><option>BT6</option></select></label>
+<label>Tipo de cliente<select id="tariffCustomer"><option selected value="residencial">Residencial</option><option value="noResidencial">No residencial</option></select></label>
+<label>Fecha de referencia<input id="tariffDate" type="date" value="2026-09-28"></label>
+<label>Días facturados<input id="billingDays" type="number" min="1" max="62" value="30"></label>
+<label>% energía en punta<input id="puntaPct" type="number" min="0" max="100" step="1" value="25"></label>
+<label>Potencia contratada (W)<input id="contractedW" type="number" min="0" step="1" value="0"></label></div>
+<div class="receipt-grid"><div class="receipt-card"><div class="receipt-total-label">CONSUMO DEL CUADRO</div><div id="receiptKwh" class="receipt-total">0.00 kWh</div><div class="receipt-total-label">RECIBO ESTIMADO</div><div id="receiptTotal" class="receipt-total">S/ 0.00</div><div id="receiptTariffNote" class="hint"></div></div>
+<div class="receipt-card"><h3>Comparación con recibo real</h3><div class="form"><label>Consumo real (kWh)<input id="realKwh" type="number" min="0" step="0.01" value="331"></label><label>Importe real (S/)<input id="realBill" type="number" min="0" step="0.01" value="287"></label><label>Alumbrado público (S/)<input id="publicLighting" type="number" min="0" step="0.01" value="19.25"></label><label>Reposición/mantenimiento (S/)<input id="maintenanceBill" type="number" min="0" step="0.01" value="1.68"></label><label>Otros cargos/aportes (S/)<input id="otherBill" type="number" min="0" step="0.01" value="0"></label></div></div></div>
+<div class="tablewrap receipt-table-wrap"><table class="receipt-table"><thead><tr><th>Concepto</th><th>Estimado</th><th>Real</th><th>Diferencia</th></tr></thead><tbody id="receiptRows"></tbody></table></div><div class="notice" id="receiptWarning"></div></div></section><section id="analysis" class="page"><div class="panel"><h2>📊 Análisis y reducción</h2><p class="hint">Escenario orientativo de reducción. Modifica las horas de uso para comprobar el efecto.</p><div id="analysisList"></div></div></section>
 <section id="consumo" class="page"><div class="panel"><h2>Consumo diario y mensual</h2><p>La corriente se calcula con FP. Para 1F: I=P/(V×FP); para 3F: I=P/(√3×V×FP).</p>
 <div class="tablewrap"><table id="consTable"><thead><tr><th>Equipo</th><th>W</th><th>FP</th><th>I A</th><th>kWh/día</th><th>kWh/mes</th><th>S/día</th><th>S/mes</th><th>Dato</th></tr></thead><tbody></tbody></table></div></div></section>
 <section id="recommendations" class="page"><div class="panel"><h2>💡 Recomendaciones de reducción</h2><p class="hint">Las recomendaciones se generan a partir de tus datos y mediciones reales. No cambian los valores automáticamente; tú decides qué modificar.</p><div id="recommendationSummary" class="rec-summary"></div>
