@@ -23,8 +23,8 @@ const measured=[
 ["Fuga total vivienda","Normal",1.79,"mA","UT251C+","Corriente de fuga",0,0,"Suma aproximada; sirve para seguimiento del diferencial, no para kWh."]
 ];
 const preset=[
-["Piso 1","Refrigeradora Samsung RT38K5930S8",1,0,220,"1F",.95,1,24.0,24.17,"DATO REAL / ETIQUETA"],
-["Piso 1","Congelador Miray CMV-380HF",1,0,220,"1F",.95,1,24,35,"DATO REAL / CÁLCULO"],
+["Piso 1","Refrigeradora Samsung RT38K5930S8",1,0,220,"1F",.95,1,24.0,24.17,"DATO REAL / ETIQUETA · W NO REGISTRADO"],
+["Piso 1","Congelador Miray CMV-380HF",1,0,220,"1F",.95,1,24,35,"DATO REAL / kWh REGISTRADO · W NO REGISTRADO"],
 ["Piso 1","Termo hervidor Miray TME-52",1,750,220,"1F",.99,1,.5,"","PLACA + USO REAL"],
 ["Piso 1","Cocina + horno Aghaso (chispero/display)",1,5,220,"1F",.95,1,.3,"","DATO REAL / CÁLCULO"],
 ["Piso 1","TV MIRAY QLED 85 MQ85-E2000GBT",1,300,220,"1F",.90,1,10,"","DATO REAL / CÁLCULO"],
@@ -86,8 +86,7 @@ function syncTariff(){const k=totalModel();const demand=S.a.reduce((z,x)=>z+(+x.
 function calc(x){let w=+x.w||0,q=+x.q||0,h=+x.h||0,d=S.p.days,pf=Math.max(.01,+x.pf||1),fd=+x.fd||0,v=+x.v||S.p.v;let inst=w*q;let k=x.fixed!==""&&x.fixed!=null?+x.fixed:inst*h*d/1000;let I=x.f==="3F"?inst/(Math.sqrt(3)*v*pf):inst/(v*pf);return{inst,k,day:k/d,cost:k*S.p.tar,demand:inst*fd/1000,I}}
 function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll('"',"&quot;").replaceAll("<","&lt;").replaceAll(">","&gt;")}
 function edit(i,k,v){S.a[i][k]=(k==="r"||k==="n"||k==="f"||k==="d"||k==="fixed")?v:+v;save();draw()}
-function field(i,k){let x=S.a[i];return '<input value="'+esc(x[k])+'" onchange="edit('+i+',\''+k+'\',this.value)">'}
-function updatePrintMeta(){const d=document.getElementById("printDate");if(d)d.textContent=new Date().toLocaleDateString("es-PE");const v=document.getElementById("printVoltage");if(v)v.textContent=(+S.p.v||220)+" V";const sy=document.getElementById("printSystem");if(sy)sy.textContent=S.p.sys||"3F";const a=document.getElementById("printArea");if(a)a.textContent=(+S.p.area||0)+" m²";const b=document.getElementById("printBill");if(b)b.textContent=(+S.p.bill||0)+" kWh/mes";const t=document.getElementById("printTariff");if(t)t.textContent="S/ "+(+S.p.tar||0).toFixed(4)+" / kWh"}
+function field(i,k){let x=S.a[i];let display=(k==="w"&&(+x[k]||0)===0)?"":esc(x[k]);return '<input value="'+display+'" placeholder="—" onchange="edit('+i+',\\''+k+'\\',this.value)">'}
 function draw(){syncTariff();drawRecommendations();["voltage","system","tariff","days","area","bill"].forEach((id,i)=>document.getElementById(id).value=[S.p.v,S.p.sys,S.p.tar,S.p.days,S.p.area,S.p.bill][i]);drawLoads();drawMeasurements();drawCons();drawDash();drawAnalysis();updatePrintMeta()}
 function mfield(i,k){return '<input value="'+esc(S.m[i][k])+'" onchange="mf('+i+',\''+k+'\',this.value)">'}
 function mf(i,k,v){S.m[i][k]=v;save();draw()}
