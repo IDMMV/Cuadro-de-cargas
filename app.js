@@ -83,7 +83,17 @@ function calc(x){let w=+x.w||0,q=+x.q||0,h=+x.h||0,d=S.p.days,pf=Math.max(.01,+x
 function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll('"',"&quot;").replaceAll("<","&lt;").replaceAll(">","&gt;")}
 function edit(i,k,v){S.a[i][k]=(k==="r"||k==="n"||k==="f"||k==="d"||k==="fixed")?v:+v;save();draw()}
 function field(i,k){let x=S.a[i];let display=(k==="w"&&(+x[k]||0)===0)?"":esc(x[k]);return '<input value="'+display+'" placeholder="—" onchange="edit('+i+',\''+k+'\',this.value)">'}
-function draw(){syncTariff();drawRecommendations();["voltage","system","tariff","days","area","bill"].forEach((id,i)=>document.getElementById(id).value=[S.p.v,S.p.sys,S.p.tar,S.p.days,S.p.area,S.p.bill][i]);drawLoads();drawMeasurements();drawCons();drawDash();drawAnalysis();updatePrintMeta()}
+function updatePrintMeta(){
+ const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
+ const d=new Date();
+ set("printDate",d.toLocaleDateString("es-PE",{day:"2-digit",month:"2-digit",year:"numeric"}));
+ set("printVoltage",(+S.p.v||220)+" V");
+ set("printSystem",S.p.sys||"1F");
+ set("printArea",(+S.p.area||0)+" m²");
+ set("printBill",(+S.p.bill||0).toFixed(2)+" kWh/mes");
+ set("printTariff",(+S.p.tar||0).toFixed(4)+" S/kWh");
+}
+function draw(){syncTariff();drawRecommendations();drawReceipt();["voltage","system","tariff","days","area","bill"].forEach((id,i)=>document.getElementById(id).value=[S.p.v,S.p.sys,S.p.tar,S.p.days,S.p.area,S.p.bill][i]);drawLoads();drawMeasurements();drawCons();drawDash();drawAnalysis();updatePrintMeta()}
 function mfield(i,k){return '<input value="'+esc(S.m[i][k])+'" onchange="mf('+i+',\''+k+'\',this.value)">'}
 function mf(i,k,v){S.m[i][k]=v;save();draw()}
 function drawMeasurements(){let tb=document.querySelector("#measurementsTable tbody");if(!tb)return;tb.innerHTML=S.m.map((m,i)=>'<tr><td>'+mfield(i,"e")+'</td><td>'+mfield(i,"s")+'</td><td>'+mfield(i,"r")+'</td><td>'+mfield(i,"u")+'</td><td>'+mfield(i,"i")+'</td><td>'+mfield(i,"t")+'</td><td>'+((+m.va||0)?(+m.va).toFixed(2):"—")+'</td><td>'+((+m.pw||0)?(+m.pw).toFixed(2):"—")+'</td><td>'+mfield(i,"o")+'</td><td><button class="danger" onclick="S.m.splice('+i+',1);save();draw()">×</button></td></tr>').join("")}
