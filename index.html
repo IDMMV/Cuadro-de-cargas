@@ -29,6 +29,25 @@
 <div class="panel"><h2>Distribución del consumo</h2><div id="bars"></div></div>
 </section>
 <section id="cargas" class="page">
+<div class="print-header">
+  <div class="print-brand">
+    <div class="print-title">CUADRO DE CARGAS ELÉCTRICAS</div>
+    <div class="print-subtitle">Memoria de cálculo y distribución de cargas</div>
+  </div>
+  <div class="print-meta">
+    <div><b>Proyecto:</b> Vivienda unifamiliar</div>
+    <div><b>Cliente:</b> ______________________________</div>
+    <div><b>Ubicación:</b> ______________________________</div>
+    <div><b>Fecha:</b> <span id="printDate"></span></div>
+  </div>
+</div>
+<div class="print-technical">
+  <div><b>Tensión:</b> <span id="printVoltage">220 V</span></div>
+  <div><b>Sistema:</b> <span id="printSystem">3F</span></div>
+  <div><b>Área:</b> <span id="printArea">360 m²</span></div>
+  <div><b>Consumo real:</b> <span id="printBill">331 kWh/mes</span></div>
+  <div><b>Tarifa:</b> <span id="printTariff">—</span></div>
+</div>
 <div class="toolbar"><button onclick="add()">＋ Agregar equipo</button><button class="light" onclick="restore()">↻ Restaurar mis datos</button><button class="light" onclick="backup()">⬇ JSON</button><span>Todos los campos son editables.</span></div>
 <div class="tablewrap"><table id="loadTable"><thead><tr>
 <th>Ambiente</th><th>Equipo / circuito</th><th>Cant.</th><th>W/u</th><th>V</th><th>Fase</th><th>FP</th><th>FD</th><th>h/día</th><th>kWh/mes</th><th>MD kW</th><th>I A</th><th>Dato</th><th></th>
