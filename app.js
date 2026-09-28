@@ -1,4 +1,4 @@
-const KEY="hugo_cargas_v2",T=0.6545;
+const KEY="hugo_cargas_v3",T=0.6545;
 const measured=[
 ["TV MIRAY 43 MS43-E201","Normal",29.31,"mA","UT251C+","Lectura de pinza",6.45,70,"Lectura reportada; no convertir directamente a W."],
 ["TV MIRAY 43 MS43-E201","Funcionamiento",394,"mA","UT251C+","Lectura de pinza",86.68,70,"VA de referencia; potencia activa de diseño sigue siendo 70 W de placa."],
@@ -122,4 +122,4 @@ function init(){
   draw();
   document.querySelectorAll(".tab").forEach(x=>x.onclick=()=>tab(x.dataset.tab));
 }
-init();
+try{init();window.__HUGO_APP_LOADED__=true}catch(err){console.error("Hugo Cuadro de Cargas:",err);document.body.insertAdjacentHTML("afterbegin",'<div style="position:fixed;z-index:99999;top:0;left:0;right:0;padding:14px;background:#b91c1c;color:white;font:600 14px Arial">Error al iniciar la aplicación. Abre F12 → Consola para ver el detalle.</div>');}
