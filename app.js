@@ -64,7 +64,18 @@ function drawReceipt(){
  const ids={tariffCode:"tariffCode",customer:"tariffCustomer",days:"billingDays",puntaPct:"puntaPct",contractedW:"contractedW",bill:"realKwh",billS:"realBill",publicLighting:"publicLighting",maintenanceBill:"maintenanceBill",otherBill:"otherBill"};
  Object.entries(ids).forEach(([k,id])=>{const el=document.getElementById(id);if(el){if(el.type==="number")el.value=+S.p[k]||0;else el.value=S.p[k]||"";}});
 }
-function init(){try{S=JSON.parse(localStorage.getItem(KEY))||S}catch(e){} S.m=(S.m||[]).map(m=>Object.assign({fp:fpSuggested(m.e)},m));S.p=Object.assign({v:220,sys:"3F",tar:T,days:30,area:360,bill:331,billS:287,tariffCode:"BT5B",customer:"residencial",tariffDate:"2026-09-28",puntaPct:25,contractedW:0,publicLighting:19.25,maintenanceBill:1.68,otherBill:0},S.p||{});if(!S.recPct)S.recPct={};if(!Array.isArray(S.m))S.m=measured.map(x=>({e:x[0],s:x[1],r:x[2],u:x[3],i:x[4],t:x[5],va:x[6],pw:x[7],o:x[8]}));if(!S.a.length)restore();bind();draw();document.querySelectorAll(".tab").forEach(x=>x.onclick=()=>tab(x.dataset.tab))}
+function init(){
+ try{S=JSON.parse(localStorage.getItem(KEY))||S}catch(e){}
+ S.m=(S.m||[]).map(m=>Object.assign({fp:fpSuggested(m.e)},m));
+ S.p=Object.assign({v:220,sys:"3F",tar:T,days:30,area:360,bill:331,billS:287,tariffCode:"BT5B",customer:"residencial",tariffDate:"2026-09-28",puntaPct:25,contractedW:0,publicLighting:19.25,maintenanceBill:1.68,otherBill:0},S.p||{});
+ if(!S.recPct)S.recPct={};
+ normalizeState();
+ if(!S.m.length)S.m=measured.map(x=>({e:x[0],s:x[1],r:x[2],u:x[3],i:x[4],t:x[5],va:x[6],pw:x[7],o:x[8],fp:fpSuggested(x[0])}));
+ if(!S.a.length)restore();
+ bind();
+ draw();
+ document.querySelectorAll(".tab").forEach(x=>x.onclick=()=>tab(x.dataset.tab));
+}
 function restore(){S.recPct={};S.a=preset.map(x=>({r:x[0],n:x[1],q:x[2],w:x[3],v:x[4],f:x[5],pf:x[6],fd:x[7],h:x[8],fixed:x[9],d:x[10]}));S.m=measured.map(x=>({e:x[0],s:x[1],r:x[2],u:x[3],i:x[4],t:x[5],va:x[6],pw:x[7],o:x[8]}));save();draw()}
 function bind(){
 ["voltage","system","tariff","days","area","bill"].forEach(id=>document.getElementById(id).oninput=()=>{
@@ -136,7 +147,37 @@ function exportMeasurements(){let rows=[["Equipo","Estado","Lectura","Unidad","I
 function drawAnalysis(){let box=document.getElementById("analysisList");if(!box)return;let top=[...S.a].map(l=>({l,c:calc(l)})).sort((a,b)=>b.c.k-a.c.k).slice(0,10);box.innerHTML=top.map((x,i)=>'<div class="analysis-row"><b>'+(i+1)+'. '+esc(x.l.n)+'</b><span>'+x.c.k.toFixed(1)+' kWh/mes · S/ '+x.c.cost.toFixed(2)+'/mes</span><span>Escenario -20% de horas: -'+(x.c.k*.2).toFixed(1)+' kWh/mes.</span></div>').join("")}
 function drawLoads(){let tb=document.querySelector("#loadTable tbody");tb.innerHTML=S.a.map((x,i)=>{let c=calc(x);return '<tr><td>'+field(i,"r")+'</td><td>'+field(i,"n")+'</td><td>'+field(i,"q")+'</td><td>'+((+x.w||0)===0?'—':field(i,"w"))+'</td><td>'+field(i,"v")+'</td><td><select onchange="edit('+i+',\'f\',this.value)"><option '+(x.f==="1F"?"selected":"")+' >1F</option><option '+(x.f==="3F"?"selected":"")+'>3F</option></select></td><td>'+field(i,"pf")+'</td><td>'+field(i,"fd")+'</td><td>'+field(i,"h")+'</td><td>'+c.k.toFixed(2)+'</td><td>'+c.demand.toFixed(2)+'</td><td>'+c.I.toFixed(2)+'</td><td>'+esc(x.d)+'</td><td><button class="danger" onclick="S.a.splice('+i+',1);save();draw()">×</button></td></tr>'}).join("")}
 function drawCons(){let tb=document.querySelector("#consTable tbody");let a=[...S.a].sort((x,y)=>calc(y).k-calc(x).k);tb.innerHTML=a.map(x=>{let c=calc(x);return '<tr><td>'+esc(x.n)+'</td><td>'+((+x.w||0)?x.w:"—")+'</td><td>'+x.pf+'</td><td>'+(c.hasDesignPower?c.I.toFixed(2):"—")+'</td><td>'+c.day.toFixed(2)+'</td><td>'+c.k.toFixed(2)+'</td><td>S/ '+(c.day*S.p.tar).toFixed(2)+'</td><td>S/ '+c.cost.toFixed(2)+'</td><td><span class="tag">'+esc(x.d)+'</span></td></tr>'}).join("")}
-function drawDash(){let t=S.a.reduce((a,x)=>{let c=calc(x);a.i+=c.inst;a.k+=c.k;a.d+=c.demand;a.cost+=c.cost;return a},{i:0,k:0,d:0,cost:0});document.getElementById("kInst").textContent=(t.i/1000).toFixed(2)+" kW";document.getElementById("kDem").textContent=t.d.toFixed(2)+" kW";document.getElementById("kKwh").textContent=t.k.toFixed(2)+" kWh";document.getElementById("kCost").textContent="S/ "+t.cost.toFixed(2);document.getElementById("kBill").textContent="S/ "+(+S.p.billS||0).toFixed(2);document.getElementById("kDiff").textContent=(t.k-S.p.bill).toFixed(2)+" kWh";let top=[...S.a].sort((x,y)=>calc(y).k-calc(x).k).slice(0,8),mx=calc(top[0]||{w:1,q:1,h:1}).k||1;document.getElementById("top").innerHTML=top.slice(0,5).map(x=>'<p><b>'+esc(x.n)+'</b> — '+calc(x).k.toFixed(1)+' kWh/mes</p>').join("");document.getElementById("bars").innerHTML=top.map(x=>{let k=calc(x).k;return '<div class="bar"><span>'+esc(x.n)+'</span><div class="barline"><div class="fill" style="width:'+Math.max(2,k/mx*100)+'%"></div></div><b>'+k.toFixed(1)+'</b></div>'}).join("")}
+function drawDash(){
+ const safe=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
+ const days=Math.max(1,+S.p.days||30);
+ const t=S.a.reduce((acc,x)=>{
+  const c=calc(x);
+  acc.i+=c.inst;
+  acc.k+=Number.isFinite(c.k)?c.k:0;
+  acc.d+=c.demand;
+  acc.cost+=c.k*(+S.p.tar||0);
+  return acc;
+ },{i:0,k:0,d:0,cost:0});
+ safe("kInst",(t.i/1000).toFixed(2)+" kW");
+ safe("kDem",t.d.toFixed(2)+" kW");
+ safe("kKwh",t.k.toFixed(2)+" kWh");
+ safe("kCost","S/ "+t.cost.toFixed(2));
+ safe("kBill","S/ "+(+S.p.billS||0).toFixed(2));
+ safe("kDiff",(t.k-(+S.p.bill||0)).toFixed(2)+" kWh");
+ const top=[...S.a].sort((x,y)=>calc(y).k-calc(x).k).slice(0,8);
+ const mx=Math.max(1,...top.map(x=>calc(x).k));
+ const topEl=document.getElementById("top");
+ if(topEl)topEl.innerHTML=top.slice(0,5).map(x=>'<p><b>'+esc(x.n)+'</b> — '+calc(x).k.toFixed(1)+' kWh/mes</p>').join("");
+ const bars=document.getElementById("bars");
+ if(bars)bars.innerHTML=top.map(x=>{const k=calc(x).k;return '<div class="bar"><span>'+esc(x.n)+'</span><div class="barline"><div class="fill" style="width:'+Math.max(2,k/mx*100)+'%"></div></div><b>'+k.toFixed(1)+'</b></div>'}).join("");
+}
+function normalizeState(){
+ if(!S.p||typeof S.p!=="object")S.p={};
+ S.p.days=Math.max(1,+S.p.days||30);
+ S.p.v=+S.p.v||220;
+ if(!Array.isArray(S.a))S.a=[];
+ S.a=S.a.map(x=>Object.assign({r:"",n:"Equipo",q:1,w:0,v:S.p.v,f:"1F",pf:.9,fd:1,h:0,fixed:"",d:""},x));
+}
 function normalizeKnownLoads(){
  const known={
   "Refrigeradora Samsung RT38K5930S8":{w:33.11,fixed:24,d:"ETIQUETA: 290 kWh/año → 24.2 kWh/mes; P/u pendiente de placa o corriente nominal"},
