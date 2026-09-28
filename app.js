@@ -23,35 +23,30 @@ const measured=[
 ["Fuga total vivienda","Normal",1.79,"mA","UT251C+","Corriente de fuga",0,0,"Suma aproximada; sirve para seguimiento del diferencial, no para kWh."]
 ];
 const preset=[
-["Piso 1","Refrigeradora Samsung RT38K5930S8",1,0,220,"1F",.95,1,24.0,24.17,"DATO REAL / ETIQUETA · W NO REGISTRADO"],
-["Piso 1","Congelador Miray CMV-380HF",1,0,220,"1F",.95,1,24,35,"DATO REAL / kWh REGISTRADO · W NO REGISTRADO"],
-["Piso 1","Termo hervidor Miray TME-52",1,750,220,"1F",.99,1,.5,"","PLACA + USO REAL"],
-["Piso 1","Cocina + horno Aghaso (chispero/display)",1,5,220,"1F",.95,1,.3,"","DATO REAL / CÁLCULO"],
-["Piso 1","TV MIRAY QLED 85 MQ85-E2000GBT",1,300,220,"1F",.90,1,10,"","DATO REAL / CÁLCULO"],
-["Piso 1","TV MIRAY 32",1,55,220,"1F",.90,1,4,"","DATO REAL / VALOR DE TRABAJO"],
-["Piso 1","Campana extractora",1,150,220,"1F",.85,.8,.5,"","DATO REAL / CÁLCULO"],
-["Piso 1","Microondas",1,1000,220,"1F",.95,.7,.25,"","DATO REAL / CÁLCULO"],
-["Piso 1","Iluminación sala/comedor",4,12,220,"1F",.95,1,5.5,"","DATO REAL / USO"],
-["Piso 1","Transformador + TV box",1,15,220,"1F",.90,1,24,"","DATO REAL / CÁLCULO"],
-["Piso 2","PC Lenovo AIO",1,90,220,"1F",.95,.8,3,"","PLACA + USO REAL"],
-["Piso 2","Lavadora Samsung WA19T6260BV",1,900,220,"1F",.85,1,.38,15.6,"CICLOS REALES / CÁLCULO"],
-["Piso 2","Secadora a gas",1,5,220,"1F",.90,1,.57,"","DATO REAL / CÁLCULO"],
-["Piso 2","Terma a gas Aghaso TER-AGH011",1,5,220,"1F",.90,1,.2,"","PLACA + USO REAL"],
-["Piso 2","Impresora Brother DCP-T710W",1,3,220,"1F",.80,1,1,"","PLACA + USO REAL"],
-["Piso 2","TV LG 55 55UM7100PSA",1,140,220,"1F",.90,1,.86,"","DATO REAL / PLACA"],
-["Piso 2","Focos 2do piso",4,12,220,"1F",.95,1,2,"","DATO REAL / USO"],
-["Piso 2","Ventilador",1,60,220,"1F",.85,.8,.28,"","DATO REAL / CÁLCULO"],
-["Piso 3","TV MIRAY QLED 85 MQ85-E2000GBT",1,300,220,"1F",.90,1,3,"","DATO REAL / CÁLCULO"],
-["Piso 3","TV MIRAY 43 MS43-E201",1,70,220,"1F",.90,1,3,"","DATO REAL / PLACA"],
-["Piso 3","Cámaras EZVIZ CS-H6c",4,5,220,"1F",.90,1,24,"","DATO REAL / PLACA"],
-["Piso 3","Módems/routers",5,8,220,"1F",.90,1,24,"","DATO REAL / CÁLCULO"],
-["Piso 3","Focos 3er piso",4,12,220,"1F",.95,1,2,"","DATO REAL / USO"],
-["Piso 3","PS5",1,216.8,220,"1F",.95,1,2,"","DATO REAL / CÁLCULO"],
-["Piso 3","Plancha Oster GCSTC5000-053",1,2200,220,"1F",.98,1,.107,"","PLACA + USO REAL"],
-["Piso 3","Lámpara emergencia LED HALUX",1,3,220,"1F",.90,1,24,"","DATO REAL / CÁLCULO"],
-["Piso 3","Reloj de pared LED",1,3,220,"1F",.90,1,24,"","DATO REAL / CÁLCULO"]
-];
-let S={p:{v:220,sys:"3F",tar:T,days:30,area:360,bill:331,billS:287,tariffCode:"BT5B",customer:"residencial",tariffDate:"2026-09-28",puntaPct:25,contractedW:0,publicLighting:19.25,maintenanceBill:1.68,otherBill:0},a:[],m:measured.map(x=>({e:x[0],s:x[1],r:x[2],u:x[3],i:x[4],t:x[5],va:x[6],pw:x[7],o:x[8]}))};
+["Piso 1","Refrigeradora Samsung RT38K5930S8",1,0,220,"1F",.95,1,0,24,"kWh/mes directo de etiqueta: 290 kWh/año ÷12 = 24.2. Buena ventilación en cocina."],
+["Piso 1","Congelador Miray CMV-380HF (vertical)",1,0,220,"1F",.95,1,0,35,"kWh/mes directo, ajustado: etiqueta dice 282 kWh/año (23.5/mes), pero está en pasadizo estrecho sin ventilación → se estimó 35 kWh/mes por sobreesfuerzo del compresor."],
+["Piso 1","Termo hervidor Miray TME-52 (standby 24/7)",1,80,220,"1F",.99,1,24,"","Placa: 750W calentar / 80W mantener tibio. Se deja encendido todo el día (dato del cliente)."],
+["Piso 1","Cocina + horno Aghaso (solo chispero, gas real)",1,5,220,"1F",.95,1,.3,"","Placa 1500-2500W es del quemador a GAS, no eléctrico. Solo enciende chispero/display."],
+["Piso 1","TV MIRAY 85'' (sala/comedor)",1,300,220,"1F",.90,1,10,"","Placa oficial: consumo 300W. Uso diario confirmado por cliente: ~10h/día."],
+["Piso 1","TV 32''",1,60,220,"1F",.90,1,4,"","Estimado (no medido). Confirmar horas reales de uso."],
+["Piso 1","Campana extractora",1,150,220,"1F",.85,.8,.5,"","Estimado, uso esporádico al cocinar."],
+["Piso 1","Microondas",1,1000,220,"1F",.95,.7,.25,"","Uso diario para calentar comida (dato del cliente), ~15 min/día estimado."],
+["Piso 1","Focos ahorradores/LED (15 unid.)",15,12,220,"1F",.95,1,5,"","Estimado 12W c/u LED, ~5h/día promedio."],
+["Piso 1","Transformador 220V-12V + TV box",1,15,220,"1F",.90,1,24,"","Estimado, funcionamiento continuo."],
+["Piso 2","PC Lenovo AIO (i3-6006U, 23'')",1,50,220,"1F",.95,.8,5,"","Uso normal 2h/día + olvidos frecuentes (dato del cliente) → 5h/día promedio estimado."],
+["Piso 2","Lavadora Samsung WA19T6260BV",1,0,220,"1F",.95,1,0,18,"Placa: 1.5 kWh/ciclo a 60°C. Uso: 1 día/semana con ~3 cargas → ~18 kWh/mes fijo."],
+["Piso 2","Secadora a gas (encendido eléctrico)",1,5,220,"1F",.90,1,.2,"","Solo chispero eléctrico, calor es a gas. Consumo eléctrico mínimo."],
+["Piso 2","Terma a gas 2do piso (chispero eléctrico)",1,5,220,"1F",.90,1,.2,"","Placa: calentador a gas GN, 20kW térmicos. Chispero eléctrico consume solo al encender."],
+["Piso 2","Impresora Brother DCP-T710W",1,3,220,"1F",.80,1,1,"","Placa: 0.35A a 220V ≈ 77W máx en impresión; standby ~3W. Uso esporádico."],
+["Piso 2","TV 55''",1,120,220,"1F",.90,1,.86,"","Uso: 6h/semana ('exagerando', dato del cliente) → 0.86 h/día promedio."],
+["Piso 2","Focos 2do piso (10 unid., 4 en uso diario)",4,12,220,"1F",.95,1,2,"","Cliente: 10 focos, solo 4 se usan diariamente y de forma momentánea (~2h/día estimado)."],
+["Piso 2","Ventilador",1,60,220,"1F",.85,.8,.28,"","Uso: par de horas/semana (dato del cliente) → 0.28 h/día promedio."],
+["Piso 3","TV 85''",1,300,220,"1F",.90,1,3,"","Placa estimada igual a TV MIRAY 85'' (300W). HORAS DE USO NO CONFIRMADAS por cliente — se asumió 3h/día. Verificar."],
+["Piso 3","TV 55''",1,120,220,"1F",.90,1,3,"","Estimado 120W. HORAS DE USO NO CONFIRMADAS por cliente — se asumió 3h/día. Verificar."],
+["Piso 3","Cámaras EZVIZ CS-H6c (4 unid.)",4,3.5,220,"1F",.90,1,24,"","Placa: 5V/1A, 5W máx. Consumo real en operación ~3.5W. Funcionan 24/7."],
+["Piso 3","Módems/routers (3 unid.)",3,8,220,"1F",.90,1,24,"","Estimado 8W c/u. Funcionamiento continuo 24/7."],
+["Piso 3","Focos 3er piso (10 unid., uso similar a piso 2)",4,12,220,"1F",.95,1,2,"","Estimado: similar patrón de uso que piso 2 (4 focos activos ~2h/día). Verificar con cliente."]
+];let S={p:{v:220,sys:"3F",tar:T,days:30,area:360,bill:331,billS:287,tariffCode:"BT5B",customer:"residencial",tariffDate:"2026-09-28",puntaPct:25,contractedW:0,publicLighting:19.25,maintenanceBill:1.68,otherBill:0},a:[],m:measured.map(x=>({e:x[0],s:x[1],r:x[2],u:x[3],i:x[4],t:x[5],va:x[6],pw:x[7],o:x[8]}))};
 function money(n){return "S/ "+(+n||0).toFixed(2)}
 function drawReceipt(){
  const k=totalModel(),demand=S.a.reduce((z,x)=>z+(+x.w||0)*(+x.q||0)*(+x.fd||0)/1000,0),r=estimateTariff(S.p,k,demand);
@@ -60,11 +55,12 @@ function drawReceipt(){
  const rk=document.getElementById("receiptKwh"),rt=document.getElementById("receiptTotal"),note=document.getElementById("receiptTariffNote"),rows=document.getElementById("receiptRows"),warn=document.getElementById("receiptWarning");
  if(!rk||!rt)return;
  rk.textContent=k.toFixed(2)+" kWh";rt.textContent=money(total);
- note.textContent="Pliego "+r.code+" · Lima Norte · vigente desde 04/09/2026 · "+r.detail+" · tarifas con IGV.";
+ note.textContent="Pliego "+r.code+" · Lima Norte · vigente desde 04/09/2026 · "+r.detail+" · tarifas con IGV. El consumo proviene del Cuadro de Cargas.";
  const realEnergy=(+S.p.bill||0)*(r.avg||0),realTotal=+S.p.billS||0;
+ const floorTotals={};S.a.forEach(x=>{const f=x.r||"Sin piso";floorTotals[f]=(floorTotals[f]||0)+calc(x).k});
  const data=[["Cargo por energía",r.energy,realEnergy],["Cargo fijo",(r.fixed||0),null],["Cargo por potencia",(r.power||0),null],["Alumbrado público",publicLighting,null],["Reposición / mantenimiento",maintenance,null],["Otros cargos / aportes",other,null],["TOTAL ESTIMADO",total,realTotal]];
  rows.innerHTML=data.map(x=>'<tr><td><b>'+x[0]+'</b></td><td>'+money(x[1])+'</td><td>'+((x[2]==null)?"—":money(x[2]))+'</td><td>'+((x[2]==null)?"—":money(x[1]-x[2]))+'</td></tr>').join("");
- warn.textContent="Referencial: las tarifas horarias requieren conocer la distribución punta/fuera de punta y la demanda facturada. Si el periodo cruza más de un pliego, Pluz indica que debe aplicarse una tarifa promedio ponderada. Este módulo usa el pliego vigente del 04/09/2026 para Lima Norte.";
+ warn.textContent="El consumo mostrado proviene exclusivamente de la suma del Cuadro de Cargas actual ("+k.toFixed(2)+" kWh/mes). No se vuelve a ingresar ni estimar manualmente en esta pestaña. Referencial: las tarifas horarias requieren conocer la distribución punta/fuera de punta y la demanda facturada. Si el periodo cruza más de un pliego, Pluz indica que debe aplicarse una tarifa promedio ponderada. Este módulo usa el pliego vigente del 04/09/2026 para Lima Norte.";
  const ids={tariffCode:"tariffCode",customer:"tariffCustomer",days:"billingDays",puntaPct:"puntaPct",contractedW:"contractedW",bill:"realKwh",billS:"realBill",publicLighting:"publicLighting",maintenanceBill:"maintenanceBill",otherBill:"otherBill"};
  Object.entries(ids).forEach(([k,id])=>{const el=document.getElementById(id);if(el){if(el.type==="number")el.value=+S.p[k]||0;else el.value=S.p[k]||"";}});
 }
