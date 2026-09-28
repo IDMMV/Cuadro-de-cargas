@@ -82,7 +82,7 @@ function syncTariff(){const k=totalModel();const demand=S.a.reduce((z,x)=>z+(+x.
 function calc(x){let w=+x.w||0,q=+x.q||0,h=+x.h||0,d=S.p.days,pf=Math.max(.01,+x.pf||1),fd=+x.fd||0,v=+x.v||S.p.v;let inst=w*q;let k=x.fixed!==""&&x.fixed!=null?+x.fixed:inst*h*d/1000;let I=x.f==="3F"?inst/(Math.sqrt(3)*v*pf):inst/(v*pf);return{inst,k,day:k/d,cost:k*S.p.tar,demand:inst*fd/1000,I}}
 function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll('"',"&quot;").replaceAll("<","&lt;").replaceAll(">","&gt;")}
 function edit(i,k,v){S.a[i][k]=(k==="r"||k==="n"||k==="f"||k==="d"||k==="fixed")?v:+v;save();draw()}
-function field(i,k){let x=S.a[i];let display=(k==="w"&&(+x[k]||0)===0)?"":esc(x[k]);return '<input value="'+display+'" placeholder="—" onchange="edit('+i+',\\''+k+'\\',this.value)">'}
+function field(i,k){let x=S.a[i];let display=(k==="w"&&(+x[k]||0)===0)?"":esc(x[k]);return '<input value="'+display+'" placeholder="—" onchange="edit('+i+',\''+k+'\',this.value)">'}
 function draw(){syncTariff();drawRecommendations();["voltage","system","tariff","days","area","bill"].forEach((id,i)=>document.getElementById(id).value=[S.p.v,S.p.sys,S.p.tar,S.p.days,S.p.area,S.p.bill][i]);drawLoads();drawMeasurements();drawCons();drawDash();drawAnalysis();updatePrintMeta()}
 function mfield(i,k){return '<input value="'+esc(S.m[i][k])+'" onchange="mf('+i+',\''+k+'\',this.value)">'}
 function mf(i,k,v){S.m[i][k]=v;save();draw()}
@@ -123,7 +123,7 @@ function drawRecommendations(){
     tb.innerHTML=top.map(o=>{
       const pct=Math.max(0,Math.min(100,+S.recPct[o.x.n]||0));
       const saving=o.c.k*pct/100,n=o.c.k-saving;
-      return '<tr><td><b>'+esc(o.x.n)+'</b></td><td>'+o.c.k.toFixed(2)+'</td><td><input type="number" min="0" max="100" step="5" value="'+pct+'" onchange="setRecPct(\''+esc(o.x.n).replaceAll("'","\\'")+'\',this.value)"> %</td><td>'+saving.toFixed(2)+'</td><td><b>'+n.toFixed(2)+'</b></td><td>S/ '+o.c.cost.toFixed(2)+'</td><td>S/ '+(n*S.p.tar).toFixed(2)+'</td></tr>';
+      return '<tr><td><b>'+esc(o.x.n)+'</b></td><td>'+o.c.k.toFixed(2)+'</td><td><input type="number" min="0" max="100" step="5" value="'+pct+'" onchange="setRecPct(\''+esc(o.x.n).replaceAll("'","\'")+'\',this.value)"> %</td><td>'+saving.toFixed(2)+'</td><td><b>'+n.toFixed(2)+'</b></td><td>S/ '+o.c.cost.toFixed(2)+'</td><td>S/ '+(n*S.p.tar).toFixed(2)+'</td></tr>';
     }).join("")+
     '<tr class="new-total"><td><b>NUEVO TOTAL PROYECTADO</b></td><td>'+total.toFixed(2)+'</td><td>—</td><td><b>'+savings.toFixed(2)+'</b></td><td><b>'+newTotal.toFixed(2)+'</b></td><td>S/ '+currentCost.toFixed(2)+'</td><td><b>S/ '+newCost.toFixed(2)+'</b></td></tr>';
   }
