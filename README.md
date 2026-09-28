@@ -23,3 +23,5 @@ La aplicación distingue entre referencia gremial y normativa técnica. CAPECO n
 
 ## Nota
 Los FP, FD y potencias estimadas son editables. Las lecturas con pinza de fuga no deben convertirse automáticamente en kWh. Para consumo real se recomienda medidor/analizador de potencia.
+
+<!-- Preview branch: fix/botones-datos-2026-09-27 -->
