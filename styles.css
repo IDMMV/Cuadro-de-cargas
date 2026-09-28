@@ -69,3 +69,13 @@ main,.page,.panel,.grid,.tablewrap{min-width:0;max-width:100%}
   .print-footer .signature{min-width:190px;border-top:1px solid #333;padding-top:3px;text-align:center}
   .print-note{margin-top:5px;font-size:7px;color:#526274}
 }
+
+.app-brand{display:flex;align-items:center;gap:14px}
+.app-brand img{width:150px;height:auto;display:block;background:#fff;border-radius:4px}
+.app-brand h1{font-size:22px}
+@media(max-width:700px){.app-brand img{width:125px}.app-brand{gap:9px}}
+@media print{
+  .app-brand img{display:none}
+  #cargas .print-brand{display:flex;flex-direction:column;gap:3px}
+  #cargas .print-logo{display:block;width:245px;height:auto;object-fit:contain;object-position:left center;margin-bottom:2px}
+}
