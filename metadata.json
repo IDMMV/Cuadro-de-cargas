@@ -1,0 +1,8 @@
+{
+  "name": "Hugo | Cuadro de Cargas y Consumo",
+  "description": "Calculadora y gestión de cuadro de cargas, máxima demanda, potencia, costos y normativa en Perú.",
+  "request_frame_permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

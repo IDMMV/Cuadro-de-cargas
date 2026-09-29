@@ -1,0 +1,15 @@
+{
+  "name": "cuadro-de-cargas",
+  "version": "1.0.0",
+  "description": "Hugo - Cuadro de cargas y consumo",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "build": "echo 'No build needed'",
+    "lint": "echo 'No lint needed'"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
