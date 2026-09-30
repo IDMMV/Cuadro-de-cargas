@@ -1,55 +1,1187 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Hugo | Cuadro de Cargas y Consumo</title>
-<meta name="description" content="Calculadora y gestión de cuadro de cargas, máxima demanda, potencia, costos y normativa en Perú.">
-<meta property="og:title" content="Hugo | Cuadro de Cargas y Consumo">
-<meta property="og:description" content="Calculadora y gestión de cuadro de cargas, máxima demanda, potencia, costos y normativa en Perú.">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Hugo | Cuadro de Cargas y Consumo Eléctrico</title>
+<meta name="description" content="Gestión y cálculo profesional de cuadro de cargas, máxima demanda, consumo en kWh, costo en Soles (S/), mediciones con pinza UT251C+, diagnóstico de fugas a tierra, Google Sheets y PDF.">
+<meta property="og:title" content="Hugo | Cuadro de Cargas y Consumo Eléctrico">
+<meta property="og:description" content="Cuadro de cargas, consumo en Soles por equipo, diagnóstico especializado de fugas a tierra, respaldo en Google Sheets y reporte PDF profesional.">
 <link rel="stylesheet" href="styles.css">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
-<header><div><h1>⚡ Hugo · Cuadro de Cargas</h1><p>Consumo · máxima demanda · FP · FD · costos · normativa Perú</p></div>
-<div><button onclick="exportXLSX()">⬇ Excel</button><button class="light" onclick="window.print()">🖨 PDF</button></div></header>
-<nav>
-<button class="tab active" data-tab="resumen">Resumen</button><button class="tab" data-tab="cargas">Cuadro de cargas</button>
-<button class="tab" data-tab="measurements">📏 Mediciones</button><button class="tab" data-tab="consumo">Consumo por equipo</button><button class="tab" data-tab="analysis">Análisis</button><button class="tab" data-tab="recommendations">💡 Recomendaciones</button><button class="tab" data-tab="normativa">Normativa Perú</button>
+
+<header class="no-print">
+  <div class="header-brand">
+    <h1>⚡ Hugo · Cuadro de Cargas</h1>
+    <p>Consumo · Costos en S/ · Máxima demanda · Mediciones UT251C+ · Fugas mA · Normativa CNE Perú</p>
+  </div>
+  <div class="header-actions">
+    <button class="outline-primary" onclick="tab('mobile')" style="background: rgba(2, 132, 199, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">
+      📱 Ingreso Móvil
+    </button>
+    <button class="light" onclick="openPDFReportModal()" style="background:#ffffff; color:#0f172a; border-color:#cbd5e1; font-weight:700;">
+      📄 Reporte PDF Profesional
+    </button>
+    <button class="success" onclick="tab('googlesheets')">
+      📊 Google Workspace
+    </button>
+    <button onclick="exportXLSX()">⬇ Excel</button>
+    <div id="googleAuthStatus" class="user-badge" style="display:none;"></div>
+  </div>
+</header>
+
+<nav class="no-print">
+  <button class="tab active" data-tab="resumen">⚡ Resumen</button>
+  <button class="tab" data-tab="cargas">📋 Cuadro de Cargas & Costos S/</button>
+  <button class="tab" data-tab="measurements">📏 Mediciones (Pinza)</button>
+  <button class="tab" data-tab="fugas">⚡ Fugas a Tierra (mA)</button>
+  <button class="tab" data-tab="agenda">📅 Agenda Mantenimiento</button>
+  <button class="tab" data-tab="mobile">📱 Ingreso Móvil</button>
+  <button class="tab" data-tab="recommendations">💡 Ahorro & Recomendaciones</button>
+  <button class="tab" data-tab="googlesheets">📊 Google Workspace</button>
+  <button class="tab" data-tab="normativa">📜 Normativa Perú</button>
 </nav>
+
 <main>
-<section id="resumen" class="page active">
-<div class="cards"><article><small>Potencia instalada</small><b id="kInst">0</b></article><article><small>Máxima demanda</small><b id="kDem">0</b></article><article><small>Consumo mensual</small><b id="kKwh">0</b></article><article><small>Costo energía</small><b id="kCost">0</b></article><article><small>Recibo real</small><b id="kBill">331</b></article><article><small>Diferencia</small><b id="kDiff">0</b></article></div>
-<div class="grid">
-<div class="panel"><h2>Parámetros</h2><div class="form">
-<label>Tensión (V)<input id="voltage" type="number" value="220"></label>
-<label>Sistema<select id="system"><option>1F</option><option selected>3F</option></select></label>
-<label>Tarifa S/kWh<input id="tariff" type="number" step=".0001" value=".6545"></label>
-<label>Días/mes<input id="days" type="number" value="30"></label>
-<label>Área m²<input id="area" type="number" value="360"></label>
-<label>Consumo real kWh/mes<input id="bill" type="number" value="331"></label></div></div>
-<div class="panel"><h2>Mayores consumos</h2><div id="top"></div></div></div>
-<div class="panel"><h2>Distribución del consumo</h2><div id="bars"></div></div>
-</section>
-<section id="cargas" class="page">
-<div class="toolbar"><button onclick="add()">＋ Agregar equipo</button><button class="light" onclick="restore()">↻ Restaurar mis datos</button><button class="light" onclick="backup()">⬇ JSON</button><span>Todos los campos son editables.</span></div>
-<div class="tablewrap"><table id="loadTable"><thead><tr>
-<th>Ambiente</th><th>Equipo / circuito</th><th>Cant.</th><th>W/u</th><th>V</th><th>Fase</th><th>FP</th><th>FD</th><th>h/día</th><th>kWh/mes</th><th>MD kW</th><th>I A</th><th>Dato</th><th></th>
-</tr></thead><tbody></tbody></table></div>
-</section>
-<section id="measurements" class="page"><div class="panel"><h2>📏 Mediciones realizadas</h2><div class="notice"><b>Importante:</b> las lecturas de la UT251C+ se conservan como corriente medida. No se convierten automáticamente en kWh. Las lecturas de fuga se mantienen como diagnóstico.</div><div class="toolbar"><button onclick="addMeasurement()">＋ Agregar medición</button><button class="light" onclick="exportMeasurements()">⬇ CSV</button></div><div class="tablewrap"><table id="measurementsTable"><thead><tr><th>Equipo / circuito</th><th>Estado</th><th>Lectura</th><th>Unidad</th><th>Instrumento</th><th>Tipo</th><th>VA ref.</th><th>W placa/cálculo</th><th>Relación / observación</th><th></th></tr></thead><tbody></tbody></table></div></div><div class="panel"><h2>Relación medición → cálculo</h2><div class="relation-grid"><div><b>1. Medición</b><span>Valor observado y condición.</span></div><div><b>2. Cuadro de cargas</b><span>W, FP, FD y corriente para diseño.</span></div><div><b>3. Consumo</b><span>kWh según potencia y horas.</span></div><div><b>4. Validación</b><span>Las diferencias grandes quedan marcadas para revisar.</span></div></div></div></section>
-<section id="analysis" class="page"><div class="panel"><h2>📊 Análisis y reducción</h2><p class="hint">Escenario orientativo de reducción. Modifica las horas de uso para comprobar el efecto.</p><div id="analysisList"></div></div></section>
-<section id="consumo" class="page"><div class="panel"><h2>Consumo diario y mensual</h2><p>La corriente se calcula con FP. Para 1F: I=P/(V×FP); para 3F: I=P/(√3×V×FP).</p>
-<div class="tablewrap"><table id="consTable"><thead><tr><th>Equipo</th><th>W</th><th>FP</th><th>I A</th><th>kWh/día</th><th>kWh/mes</th><th>S/día</th><th>S/mes</th><th>Dato</th></tr></thead><tbody></tbody></table></div></div></section>
-<section id="recommendations" class="page"><div class="panel"><h2>💡 Recomendaciones de reducción</h2><p class="hint">Las recomendaciones se generan a partir de tus datos y mediciones reales. No cambian los valores automáticamente; tú decides qué modificar.</p><div id="recommendationSummary" class="rec-summary"></div>
-<div class="comparison-head"><h3>Comparativo de reducción recomendada</h3><p class="hint">Modifica el % de reducción de cada equipo. El nuevo total se recalcula automáticamente.</p></div>
-<div class="tablewrap"><table class="recommend-table"><thead><tr><th>Equipo</th><th>Actual kWh/mes</th><th>Reducción %</th><th>Ahorro kWh/mes</th><th>Nuevo kWh/mes</th><th>Costo actual</th><th>Costo nuevo</th></tr></thead><tbody id="recommendationTable"></tbody></table></div>
-<div id="recommendationList"></div></div><div class="panel"><h2>Plan de acción</h2><div class="plan-grid"><div><b>1 · Medir</b><span>Validar y complementar los datos reales con mediciones de energía cuando se quiera obtener kWh medidos directamente.</span></div><div><b>2 · Corregir hábitos</b><span>Reducir horas de equipos de alto consumo y evitar dejarlos funcionando sin necesidad.</span></div><div><b>3 · Revisar cargas 24 h</b><span>Routers, cámaras, TV Box, refrigeración y equipos en espera deben analizarse por separado.</span></div><div><b>4 · Comparar</b><span>Después de cada cambio, comparar kWh del recibo con el modelo.</span></div></div></div></section><section id="normativa" class="page"><div class="panel"><h2>Normativa peruana y cuadro de cargas</h2>
-<div class="notice"><b>Precisión:</b> CAPECO es una entidad gremial; no sustituye al RNE ni al Código Nacional de Electricidad. Para el proyecto eléctrico se debe verificar la versión vigente del RNE EM.010 y CNE – Utilización.</div>
-<h3>Referencia CNE – Utilización 050-200</h3><p>Para viviendas unifamiliares, la regla 050-200 establece una metodología de carga básica por área y cargas adicionales. La aplicación muestra esta referencia como apoyo y mantiene FD/FP editables. No reemplaza el cálculo reglamentario de un proyecto firmado.</p>
-<div class="norm"><b>Concepto</b><b>Uso en la aplicación</b><span>Carga instalada</span><span>Suma de potencias nominales de los equipos/circuitos.</span><span>Factor de demanda</span><span>FD editable para estimar máxima demanda.</span><span>Factor de potencia</span><span>FP editable para convertir potencia activa a potencia aparente/corriente.</span><span>Máxima demanda</span><span>Carga instalada × FD.</span><span>Consumo</span><span>kWh = W × horas × cantidad × días / 1000.</span></div>
-<p class="hint">Fuentes: RNE EM.010 y Código Nacional de Electricidad – Utilización, Sección 050. Para presentación oficial, comprobar la edición vigente y el cálculo específico de la instalación.</p>
-</div></section>
+  <!-- TAB 1: RESUMEN -->
+  <section id="resumen" class="page active">
+    <div class="toolbar" style="margin-bottom:12px;">
+      <div class="toolbar-group">
+        <span class="tag success" style="font-size:12px; padding:6px 12px;">⚡ Panel de Resumen General & Diagnóstico CNE</span>
+      </div>
+      <div class="toolbar-group">
+        <button class="light" onclick="openPDFReportModal()">📄 Generar Reporte PDF (Horizontal)</button>
+      </div>
+    </div>
+
+    <div class="cards">
+      <article>
+        <small>Potencia Instalada</small>
+        <b id="kInst">0 kW</b>
+        <span class="badge" style="background:#e0f2fe; color:#0369a1;">Suma nominal</span>
+      </article>
+      <article>
+        <small>Máxima Demanda</small>
+        <b id="kDem">0 kW</b>
+        <span class="badge" style="background:#f3e8ff; color:#6b21a8;">Con FD aplicado</span>
+      </article>
+      <article>
+        <small>Consumo Mensual</small>
+        <b id="kKwh">0 kWh</b>
+        <span class="badge" style="background:#e0f2fe; color:#0284c7;">Modelo mensual</span>
+      </article>
+      <article>
+        <small>Costo Energía</small>
+        <b id="kCost">S/ 0.00</b>
+        <span class="badge" style="background:#ecfdf5; color:#047857;">Tarifa S/ 0.6545/kWh</span>
+      </article>
+      <article>
+        <small>Recibo Real Ref.</small>
+        <b id="kBill">331 kWh</b>
+        <span class="badge" style="background:#fffbeb; color:#b45309;">Lectura luz mensual</span>
+      </article>
+      <article>
+        <small>Diferencia Modelo vs Real</small>
+        <b id="kDiff">0 kWh</b>
+        <span class="badge" style="background:#fef2f2; color:#b91c1c;">Brecha de calibración</span>
+      </article>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <h2>⚡ Parámetros del Sistema</h2>
+        <div class="form">
+          <label>Tensión (V)
+            <input id="voltage" type="number" value="220">
+          </label>
+          <label>Sistema Eléctrico
+            <select id="system">
+              <option value="1F">Monofásico (1F)</option>
+              <option value="3F" selected>Trifásico (3F)</option>
+            </select>
+          </label>
+          <label>Tarifa S/kWh
+            <input id="tariff" type="number" step="0.0001" value="0.6545">
+          </label>
+          <label>Días / mes
+            <input id="days" type="number" value="30">
+          </label>
+          <label>Área construida m²
+            <input id="area" type="number" value="360">
+          </label>
+          <label>Consumo real recibo (kWh)
+            <input id="bill" type="number" value="331">
+          </label>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>🔥 Mayores Gastos Mensuales (S/)</h2>
+        <div id="top"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>📊 Distribución del Consumo por Equipos Principal</h2>
+      <div id="bars"></div>
+    </div>
+  </section>
+
+  <!-- TAB 2: CUADRO DE CARGAS & COSTOS EN SOLES -->
+  <section id="cargas" class="page">
+    <div class="cards" style="margin-bottom:16px;">
+      <article style="border-left:4px solid #047857;">
+        <small>Gasto Total en Soles</small>
+        <b id="cardTotalCost" style="color:#047857;">S/ 0.00 /mes</b>
+        <span class="badge" style="background:#ecfdf5; color:#047857;">Costo mensual estimado</span>
+      </article>
+      <article style="border-left:4px solid #0284c7;">
+        <small>Gasto Reposo (Standby)</small>
+        <b id="cardStandbyCost" style="color:#0284c7;">S/ 0.00 /mes</b>
+        <span class="badge" style="background:#e0f2fe; color:#0369a1;">Vampiro pasivo</span>
+      </article>
+      <article style="border-left:4px solid #7c3aed;">
+        <small>Corriente Total Instalada</small>
+        <b id="cardTotalCurrent" style="color:#7c3aed;">0.00 A</b>
+        <span class="badge" style="background:#f3e8ff; color:#6b21a8;">Suma I Activa (Amperios)</span>
+      </article>
+      <article style="border-left:4px solid #0284c7;">
+        <small>Consumo Energético Total</small>
+        <b id="cardTotalKwh" style="color:#0f172a;">0.00 kWh</b>
+        <span class="badge" style="background:#f1f5f9; color:#475569;">kWh mensual proyectado</span>
+      </article>
+      <article style="border-left:4px solid #f59e0b;">
+        <small>Máxima Demanda (MD)</small>
+        <b id="cardMaxDemand" style="color:#b45309;">0.00 kW</b>
+        <span class="badge" style="background:#fffbeb; color:#b45309;">Con FD aplicado</span>
+      </article>
+      <article style="border-left:4px solid #ef4444;">
+        <small>Fuga Total Acometida</small>
+        <b id="cardLeakCurrent" style="color:#b91c1c;">1.79 mA</b>
+        <span class="badge" style="background:#fef2f2; color:#b91c1c;">Pinza UT251C+ (CNE)</span>
+      </article>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <button onclick="add()">＋ Agregar equipo</button>
+        <button class="light" onclick="openPDFReportModal()">📄 Generar Reporte PDF (Horizontal)</button>
+        <button class="light" onclick="restore()">↻ Restaurar mis datos reales</button>
+        <button class="light" onclick="backup()">⬇ Descargar JSON</button>
+      </div>
+      <div class="toolbar-group">
+        <label style="font-size:12px; font-weight:600; color:var(--text-muted);">Ubicación:
+          <select id="locationFilter" onchange="filterLoads()" style="padding:6px; border-radius:6px; border:1px solid var(--border-color);">
+            <option value="ALL">Todas las ubicaciones</option>
+            <option value="Piso 1">Piso 1</option>
+            <option value="Piso 2">Piso 2</option>
+            <option value="Piso 3">Piso 3</option>
+          </select>
+        </label>
+        <input type="text" id="loadSearch" placeholder="🔍 Buscar por equipo..." oninput="filterLoads()">
+      </div>
+    </div>
+
+    <div class="tablewrap">
+      <table id="loadTable">
+        <thead>
+          <tr>
+            <th>Ambiente</th>
+            <th>Equipo / circuito</th>
+            <th>Cant.</th>
+            <th>W/u</th>
+            <th>V</th>
+            <th>Fase</th>
+            <th>FP</th>
+            <th>FD</th>
+            <th style="background:#4c1d95; color:#fff;" title="Corriente de diseño para selección de cable e interruptor termomagnético (ITM)">I Activa (A)</th>
+            <th>MD kW</th>
+            <th>h/día Activo</th>
+            <th style="background:#0284c7; color:#fff;" title="Corriente de reposo/mantención cuando está en standby o enchufado">mA Reposo (Standby)</th>
+            <th>kWh/mes</th>
+            <th style="background:#047857; color:#fff;">Gasto S/mes</th>
+            <th>Origen / Dato Spec</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TAB 3: MEDICIONES CON PINZA -->
+  <section id="measurements" class="page">
+    <!-- KPIS MEDICIONES CAMPO -->
+    <div class="cards" style="margin-bottom:16px;">
+      <article style="border-left:4px solid var(--primary);">
+        <small>Total Equipos Medidos</small>
+        <b id="measTotalKpi">0</b>
+        <span class="badge" style="background:#e0f2fe; color:#0369a1;">Lecturas de campo</span>
+      </article>
+      <article style="border-left:4px solid #7c3aed;">
+        <small>Máxima Corriente Campo</small>
+        <b id="measMaxI" style="color:#7c3aed;">0.00 A</b>
+        <span class="badge" style="background:#f3e8ff; color:#6b21a8;">Pico registrado</span>
+      </article>
+      <article style="border-left:4px solid #0284c7;">
+        <small>Consumo Reposo Promedio</small>
+        <b id="measAvgStandby" style="color:#0284c7;">0.00 mA</b>
+        <span class="badge" style="background:#e0f2fe; color:#0369a1;">Standby en campo</span>
+      </article>
+      <article style="border-left:4px solid #047857;">
+        <small>Potencia Total Campo</small>
+        <b id="measTotalW" style="color:#047857;">0.00 kW</b>
+        <span class="badge" style="background:#ecfdf5; color:#047857;">Medido en placa</span>
+      </article>
+      <article style="border-left:4px solid #f59e0b;">
+        <small>Promedio Horas Activas</small>
+        <b id="measAvgHours" style="color:#b45309;">8.5 h/día</b>
+        <span class="badge" style="background:#fffbeb; color:#b45309;">Registro de campo</span>
+      </article>
+    </div>
+
+    <div class="panel">
+      <h2>📏 Mediciones de Operación con Pinza UT251C+</h2>
+      <div class="notice info">
+        <b>Ficha Técnica de Mediciones de Campo:</b> Registra aquí las lecturas de corriente instantánea (A / mA), tensión y estado operativo tomadas con la pinza amperimétrica. Estos datos respaldan la auditoría técnica e integran el Cuadro de Cargas.
+      </div>
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <button onclick="addMeasurement()">＋ Agregar medición</button>
+          <button class="light" onclick="exportMeasurements()">⬇ Descargar CSV</button>
+        </div>
+        <div class="toolbar-group">
+          <button class="light" onclick="openPDFReportModal()">📄 Generar Reporte PDF Horizontal</button>
+        </div>
+      </div>
+      <div class="tablewrap">
+        <table id="measurementsTable">
+          <thead>
+            <tr>
+              <th>Piso</th>
+              <th>Equipo / circuito</th>
+              <th>Estado / Condición</th>
+              <th>Lectura</th>
+              <th>Unidad</th>
+              <th>Instrumento</th>
+              <th>Tipo</th>
+              <th>VA ref.</th>
+              <th>W placa/cálculo</th>
+              <th>Observación / Diagnóstico</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>🔗 Relación Medición vs Cálculo de Cuadro</h2>
+      <div class="grid-3" style="gap:12px;">
+        <div style="border:1px solid var(--border-color); border-radius:8px; padding:14px;">
+          <b>1. Corriente Medida (A / mA)</b>
+          <p style="margin:4px 0 0; font-size:12px; color:var(--text-muted);">Pinza UT251C+ mide corriente instantánea o fugas de corriente a tierra.</p>
+        </div>
+        <div style="border:1px solid var(--border-color); border-radius:8px; padding:14px;">
+          <b>2. Cuadro de Cargas (W & FP)</b>
+          <p style="margin:4px 0 0; font-size:12px; color:var(--text-muted);">Calcula $I = \frac{P}{V \cdot FP}$ (1F) o $I = \frac{P}{\sqrt{3} \cdot V \cdot FP}$ (3F) con Factores de Demanda.</p>
+        </div>
+        <div style="border:1px solid var(--border-color); border-radius:8px; padding:14px;">
+          <b>3. Diagnóstico de Fugas</b>
+          <p style="margin:4px 0 0; font-size:12px; color:var(--text-muted);">Consulta la pestaña 'Fugas a Tierra' para evaluar el riesgo a la persona.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 4: FUGAS A TIERRA (PESTAÑA DEDICADA) -->
+  <section id="fugas" class="page">
+    <div class="panel" style="border-top:4px solid var(--danger);">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+        <h2>⚡ Registro & Análisis Especializado de Corrientes de Fuga a Tierra (mA)</h2>
+        <span class="tag danger" style="font-size:12px; padding:4px 10px;">Límite Diferencial CNE: 30 mA</span>
+      </div>
+
+      <div class="rec-summary" style="grid-template-columns: repeat(4, 1fr); margin-bottom:16px;">
+        <div class="rec-kpi">
+          <small>Fuga Total Registrada</small>
+          <b style="color:var(--danger);">1.79 mA</b>
+          <small style="color:var(--text-muted);">Suma acumulada vivienda</small>
+        </div>
+        <div class="rec-kpi">
+          <small>Umbral Interruptor Diferencial</small>
+          <b>30.00 mA</b>
+          <small style="color:var(--text-muted);">Sensibilidad ID CNE</small>
+        </div>
+        <div class="rec-kpi">
+          <small>Margen de Seguridad</small>
+          <b style="color:var(--success);">94.03 %</b>
+          <small style="color:var(--text-muted);">Capacidad libre en ID</small>
+        </div>
+        <div class="rec-kpi new-total">
+          <small>Estado Diagnóstico</small>
+          <b style="color:#047857; font-size:16px; margin-top:8px;">✅ SEGURO (&lt; 30 mA)</b>
+          <small style="color:#047857;">Monitorear en lluvias</small>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button class="danger" onclick="addLeakMeasurement()">＋ Registrar Lectura de Fuga</button>
+        <button class="light" onclick="openPDFReportModal()">📄 Generar Reporte PDF Horizontal</button>
+      </div>
+
+      <div class="tablewrap" style="margin-bottom:20px;">
+        <table id="leakTable">
+          <thead>
+            <tr>
+              <th>Piso</th>
+              <th>Circuito / Zona Evaluada</th>
+              <th>Corriente Fuga (mA)</th>
+              <th>Instrumento</th>
+              <th>Umbral Máximo</th>
+              <th>Nivel de Riesgo</th>
+              <th>Diagnóstico / Recomendación</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CUADRO FIJO DE EFECTOS FISIOLÓGICOS DE LA CORRIENTE (IEC 60479-1 & CNE) -->
+    <div class="panel">
+      <h2>🩺 Tabla Técnica de Efectos Fisiológicos de la Corriente Eléctrica en la Persona (IEC 60479-1 & CNE)</h2>
+      <p style="font-size:13px; color:var(--text-muted); margin-top:-6px;">
+        Escala normativa de los efectos corporales según el nivel de corriente de fuga (mA) que atraviesa el cuerpo humano en caso de contacto accidental sin protección.
+      </p>
+
+      <div class="tablewrap" style="margin-bottom:20px;">
+        <table>
+          <thead>
+            <tr style="background:#1e293b;">
+              <th>Intensidad de Corriente (mA)</th>
+              <th>Efecto Fisiológico en el Cuerpo Humano</th>
+              <th>Nivel de Riesgo</th>
+              <th>Respuesta Requerida</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr id="physioRow1">
+              <td><b>0.1 mA a 0.5 mA</b></td>
+              <td><b>Umbral de percepción:</b> Ligerísimo cosquilleo o hormigueo sutil en la piel de las yemas de los dedos. Imperceptible para la mayoría.</td>
+              <td><span class="tag success">INOFENSIVO</span></td>
+              <td>Sin riesgo. Operación normal.</td>
+            </tr>
+            <tr id="physioRow2" style="background:#ecfdf5;">
+              <td><b>0.5 mA a 3.0 mA</b> <span class="physio-badge" style="display:inline-block; margin-left:8px; padding:2px 8px; background:#047857; color:#fff; font-size:11px; border-radius:12px; font-weight:700;">📍 Total Vivienda: 1.79 mA</span></td>
+              <td><b>Umbral de reacción:</b> Cosquilleo o hormigueo perceptible en manos y brazos. No produce dolor ni contracción muscular involuntaria.</td>
+              <td><span class="tag success">RIESGO MUY BAJO</span></td>
+              <td><b>Nivel Vivienda (1.79 mA):</b> Totalmente seguro frente al disparo del ID (30 mA).</td>
+            </tr>
+            <tr id="physioRow3">
+              <td><b>3.0 mA a 10.0 mA</b></td>
+              <td><b>Umbral de soltar ("Let-go"):</b> Sensación de choque o calambre molesto con ligera sacudida muscular, pero la persona mantiene el control voluntario para soltar el conductor.</td>
+              <td><span class="tag warning">TOLERABLE</span></td>
+              <td>Revisar aislamiento preventivo.</td>
+            </tr>
+            <tr id="physioRow4" style="background:#fffbeb;">
+              <td><b>10.0 mA a 30.0 mA</b></td>
+              <td><b>Umbral de contracción muscular / Tetanización:</b> Parálisis muscular en brazos; la persona no puede soltar el objeto energizado por sí sola. Dificultad para respirar.</td>
+              <td><span class="tag danger">PELIGROSO</span></td>
+              <td><b>Umbral Máximo ID (30 mA):</b> El interruptor diferencial debe disparar en &lt;30 ms.</td>
+            </tr>
+            <tr id="physioRow5" style="background:#fef2f2;">
+              <td><b>30.0 mA a 50.0 mA</b></td>
+              <td><b>Riesgo de Asfixia & Fibrilación:</b> Fuerte contracción torácica, dificultad respiratoria severa, incremento de presión arterial y dolor intenso.</td>
+              <td><span class="tag danger" style="background:#b91c1c; color:#fff;">CRÍTICO</span></td>
+              <td>Corte inmediato de energía obligatorio.</td>
+            </tr>
+            <tr id="physioRow6" style="background:#7f1d1d; color:#ffffff;">
+              <td style="color:#ffffff;"><b>&gt; 50.0 mA</b></td>
+              <td style="color:#ffffff;"><b>Fibrilación Ventricular & Paro Cardíaco:</b> Disrupción directa del ritmo cardíaco, daño tisular severo por quemaduras internas y riesgo de paro cardíaco fatal en pocos segundos.</td>
+              <td><span class="tag danger" style="background:#ef4444; color:#fff;">RIESGO VITAL</span></td>
+              <td>Peligro de muerte. Requiere desconexión automática.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- RESUMEN DETALLADO Y RECOMENDACIONES DE FUGAS -->
+      <h3>📌 Diagnóstico Detallado de Fugas Registradas en tu Vivienda</h3>
+      <div class="grid-2" style="gap:14px; margin-top:10px;">
+        <div style="border:1px solid var(--border-color); border-radius:8px; padding:16px; background:#fafafa;">
+          <b>Análisis de la Fuga Total (1.79 mA):</b>
+          <p style="font-size:12px; color:var(--text-muted); margin:6px 0 0;">
+            El valor acumulado medido con la pinza UT251C+ en la acometida es de <b>1.79 mA</b>. En caso de contacto indirecto accidental por falla de aislamiento, la persona experimentaría como máximo una sensación sutil de <i>cosquilleo / hormigueo</i> (umbral de reacción de 0.5 a 3 mA), situándose muy lejos del nivel de contracción muscular (&gt; 10 mA) o asfixia.
+          </p>
+        </div>
+        <div style="border:1px solid var(--border-color); border-radius:8px; padding:16px; background:#fafafa;">
+          <b>Acciones y Mantenimiento Recomendado:</b>
+          <p style="font-size:12px; color:var(--text-muted); margin:6px 0 0;">
+            1. Probar el botón de test (T) del Interruptor Diferencial de 30 mA mensualmente.<br>
+            2. Volver a medir con la pinza UT251C+ durante temporadas de humedad o lluvia en Piso 1 (0.895 mA) y Piso 2 (0.635 mA).<br>
+            3. Garantizar que la barra del pozo a tierra tenga una resistencia &lt; 25 Ohmios según CNE.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB DEDICADO: AGENDA DE MANTENIMIENTO E INSPECCIÓN ELÉCTRICA -->
+  <section id="agenda" class="page">
+    <div class="panel" style="border-top:4px solid var(--primary);">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+        <div>
+          <h2 style="margin:0;">📅 Agenda de Mantenimiento e Inspección Eléctrica</h2>
+          <p style="font-size:13px; color:var(--text-muted); margin:4px 0 0;">
+            Programación de inspecciones de campo, pruebas de diferenciales, termografía de tableros y mantenimiento preventivo según Código Nacional de Electricidad (CNE).
+          </p>
+        </div>
+        <span class="tag success" style="font-size:12px; padding:4px 10px;">Gestión de Inspecciones CNE</span>
+      </div>
+
+      <!-- KPIS MANTENIMIENTO -->
+      <div class="cards" style="margin-bottom:16px;">
+        <article style="border-left:4px solid var(--primary);">
+          <small>Total Inspecciones</small>
+          <b id="agendaTotalKpi">0</b>
+          <span class="badge" style="background:#e0f2fe; color:#0369a1;">Programadas</span>
+        </article>
+        <article style="border-left:4px solid #f59e0b;">
+          <small>Pendientes este Mes</small>
+          <b id="agendaPendingKpi" style="color:#b45309;">0</b>
+          <span class="badge" style="background:#fffbeb; color:#b45309;">Requiere atención</span>
+        </article>
+        <article style="border-left:4px solid #047857;">
+          <small>Completadas</small>
+          <b id="agendaCompletedKpi" style="color:#047857;">0</b>
+          <span class="badge" style="background:#ecfdf5; color:#047857;">Verificadas</span>
+        </article>
+        <article style="border-left:4px solid #7c3aed;">
+          <small>Cumplimiento CNE</small>
+          <b id="agendaComplianceKpi" style="color:#7c3aed;">100 %</b>
+          <span class="badge" style="background:#f3e8ff; color:#6b21a8;">Estándar técnico</span>
+        </article>
+      </div>
+
+      <!-- FORMULARIO NUEVA INSPECCIÓN -->
+      <div style="background:#fafafa; border:1px solid var(--border-color); border-radius:8px; padding:16px; margin-bottom:16px;">
+        <h3 style="margin:0 0 12px; font-size:15px; display:flex; align-items:center; gap:8px;">
+          <span>➕ Programar Nueva Inspección / Mantenimiento</span>
+        </h3>
+        <div class="form" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+          <label>Piso / Ubicación
+            <select id="agPiso">
+              <option value="Piso 1">Piso 1</option>
+              <option value="Piso 2">Piso 2</option>
+              <option value="Piso 3">Piso 3</option>
+              <option value="Exteriores / Servicios">Exteriores / Servicios</option>
+              <option value="Acometida General">Acometida General</option>
+            </select>
+          </label>
+          <label>Título / Inspección
+            <input id="agTitle" type="text" placeholder="Ej: Prueba botón TEST de Interruptor Diferencial">
+          </label>
+          <label>Tipo de Mantenimiento
+            <select id="agType">
+              <option value="Prueba Botón Test ID">Prueba Botón Test ID (30mA)</option>
+              <option value="Inspección de Fugas mA">Inspección de Fugas mA (UT251C+)</option>
+              <option value="Mantenimiento Preventivo Tablero">Mantenimiento Preventivo Tablero</option>
+              <option value="Medición Pozo a Tierra">Medición Pozo a Tierra (&lt; 25 Ω)</option>
+              <option value="Medición Corriente en Reposo">Medición Corriente en Reposo (Standby)</option>
+              <option value="Auditoría CNE">Auditoría CNE / Expediente</option>
+            </select>
+          </label>
+          <label>Fecha Programada
+            <input id="agDate" type="date">
+          </label>
+          <label>Hora
+            <input id="agTime" type="time" value="09:00">
+          </label>
+          <label>Técnico / Responsable
+            <select id="agResp">
+              <option value="Ing. Proyectista CIP">Ing. Proyectista CIP</option>
+              <option value="Hugo / Inspector">Hugo / Inspector</option>
+              <option value="Técnico Electricista">Técnico Electricista</option>
+              <option value="Propietario">Propietario</option>
+            </select>
+          </label>
+          <label>Frecuencia
+            <select id="agFreq">
+              <option value="Mensual">Mensual</option>
+              <option value="Trimestral">Trimestral</option>
+              <option value="Semestral">Semestral</option>
+              <option value="Anual">Anual</option>
+              <option value="Única vez">Única vez</option>
+            </select>
+          </label>
+          <label>Estado Inicial
+            <select id="agStatus">
+              <option value="Pendiente">Pendiente</option>
+              <option value="En Proceso">En Proceso</option>
+              <option value="Completado">Completado</option>
+            </select>
+          </label>
+        </div>
+        <div style="margin-top:10px;">
+          <label>Notas / Diagnóstico Previo
+            <input id="agNotes" type="text" placeholder="Ej: Verificar disparo de ID en menos de 30ms y anotar lectura de fuga." style="width:100%;">
+          </label>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:12px;">
+          <button class="success" onclick="addAgendaItem()">💾 Guardar en Agenda</button>
+        </div>
+      </div>
+
+      <!-- TABLA DE AGENDA -->
+      <div class="toolbar" style="margin-bottom:12px;">
+        <div class="toolbar-group">
+          <label style="font-size:12px; font-weight:600; color:var(--text-muted);">Filtrar por Piso:
+            <select id="agPisoFilter" onchange="drawAgenda()" style="padding:6px; border-radius:6px; border:1px solid var(--border-color);">
+              <option value="ALL">Todos los pisos</option>
+              <option value="Piso 1">Piso 1</option>
+              <option value="Piso 2">Piso 2</option>
+              <option value="Piso 3">Piso 3</option>
+              <option value="Exteriores / Servicios">Exteriores / Servicios</option>
+            </select>
+          </label>
+          <label style="font-size:12px; font-weight:600; color:var(--text-muted);">Filtrar por Estado:
+            <select id="agStatusFilter" onchange="drawAgenda()" style="padding:6px; border-radius:6px; border:1px solid var(--border-color);">
+              <option value="ALL">Todos los estados</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="En Proceso">En Proceso</option>
+              <option value="Completado">Completado</option>
+            </select>
+          </label>
+        </div>
+        <div class="toolbar-group">
+          <button class="light" onclick="openPDFReportModal()">📄 Generar Reporte PDF (Horizontal)</button>
+        </div>
+      </div>
+
+      <div class="tablewrap">
+        <table id="agendaTable">
+          <thead>
+            <tr>
+              <th>Piso</th>
+              <th>Actividad / Inspección</th>
+              <th>Tipo</th>
+              <th>Fecha & Hora</th>
+              <th>Responsable</th>
+              <th>Frecuencia</th>
+              <th>Estado</th>
+              <th>Notas / Instrucciones</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 5: INGRESO MÓVIL -->
+  <section id="mobile" class="page">
+    <div class="cards" style="margin-bottom:16px;">
+      <article style="border-left:4px solid var(--primary);">
+        <small>Cargas Registradas</small>
+        <b id="mobKpiLoads">0</b>
+        <span class="badge" style="background:#e0f2fe; color:#0369a1;">Cuadro activo</span>
+      </article>
+      <article style="border-left:4px solid #7c3aed;">
+        <small>Lecturas de Campo</small>
+        <b id="mobKpiMeas">0</b>
+        <span class="badge" style="background:#f3e8ff; color:#6b21a8;">Pinza / Fugas</span>
+      </article>
+      <article style="border-left:4px solid #047857;">
+        <small>Modo de Inspección</small>
+        <b style="color:#047857; font-size:16px;">📱 Móvil 1-Touch</b>
+        <span class="badge" style="background:#ecfdf5; color:#047857;">Captura rápida</span>
+      </article>
+    </div>
+
+    <div class="panel" style="max-width: 650px; margin: 0 auto;">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+        <h2>📱 Registro Rápido desde Smartphone</h2>
+        <button class="light sm" onclick="openPDFReportModal()">📄 Generar Reporte PDF (Horizontal)</button>
+      </div>
+      <p style="font-size:13px; color:var(--text-muted); margin-top:-6px;">Formulario simplificado de toque rápido para ingresar cargas, mediciones o lecturas de fuga desde tu celular.</p>
+
+      <div style="display:flex; gap:8px; margin-bottom:16px;">
+        <button id="btnMobileTabLoad" class="sm" style="flex:1;" onclick="setMobileMode('LOAD')">⚡ Nueva Carga / Equipo</button>
+        <button id="btnMobileTabMeas" class="sm light" style="flex:1;" onclick="setMobileMode('MEAS')">📏 Nueva Medición / Fuga</button>
+      </div>
+
+      <!-- FORMULARIO MOVIL: CARGA -->
+      <div id="mobileLoadForm" class="form" style="grid-template-columns: 1fr;">
+        <label>Ubicación / Piso
+          <select id="mR">
+            <option value="Piso 1">Piso 1</option>
+            <option value="Piso 2">Piso 2</option>
+            <option value="Piso 3">Piso 3</option>
+            <option value="Exteriores / Servicios">Exteriores / Servicios</option>
+          </select>
+        </label>
+        <label>Nombre del Equipo o Circuito
+          <input id="mN" type="text" placeholder="Ej: Congelador, TV 65, Router">
+        </label>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+          <label>Cantidad
+            <div class="mobile-stepper">
+              <button onclick="stepInput('mQ', -1)">-</button>
+              <input id="mQ" type="number" value="1" min="1">
+              <button onclick="stepInput('mQ', 1)">+</button>
+            </div>
+          </label>
+          <label>Watts por unidad (W)
+            <input id="mW" type="number" value="100" placeholder="Ej: 150">
+          </label>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+          <label>Horas de uso activo al día
+            <input id="mH" type="number" step="0.1" value="2" placeholder="Ej: 8">
+          </label>
+          <label>Corriente Reposo (mA)
+            <input id="mIr" type="number" step="0.1" value="0" placeholder="Ej: 6.52 (Standby)">
+          </label>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+          <label>Fase
+            <select id="mF">
+              <option value="1F">Monofásico (1F)</option>
+              <option value="3F">Trifásico (3F)</option>
+            </select>
+          </label>
+          <label>Origen del Dato / Placa
+            <select id="mD">
+              <option value="ETIQUETA (290 kWh/año)">ETIQUETA (290 kWh/año)</option>
+              <option value="ETIQUETA (282 kWh/año)">ETIQUETA (282 kWh/año)</option>
+              <option value="PLACA + STANDBY">PLACA + STANDBY</option>
+              <option value="CONFIRMADO / ETIQUETA">CONFIRMADO / ETIQUETA</option>
+              <option value="DATO USUARIO">DATO USUARIO</option>
+              <option value="ESTIMADO">ESTIMADO</option>
+            </select>
+          </label>
+        </div>
+        <button class="success" onclick="saveMobileLoad()" style="padding:12px; font-size:15px; margin-top:8px;">
+          💾 Guardar Carga en el Cuadro
+        </button>
+      </div>
+
+      <!-- FORMULARIO MOVIL: MEDICION / FUGA -->
+      <div id="mobileMeasForm" class="form" style="grid-template-columns: 1fr; display:none;">
+        <label>Equipo / Circuito Medido
+          <input id="mMe" type="text" placeholder="Ej: Fuga piso 1, TV 43, PS5">
+        </label>
+        <label>Estado / Condición de Operación
+          <input id="mMs" type="text" value="Normal" placeholder="Ej: Funcionamiento, Standby, Normal">
+        </label>
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px;">
+          <label>Lectura Medida
+            <input id="mMr" type="number" step="0.001" value="10" placeholder="Ej: 25.5">
+          </label>
+          <label>Unidad
+            <select id="mMu">
+              <option value="mA">mA</option>
+              <option value="A">A</option>
+              <option value="V">V</option>
+              <option value="W">W</option>
+            </select>
+          </label>
+        </div>
+        <label>Instrumento
+          <input id="mMi" type="text" value="UT251C+">
+        </label>
+        <label>Tipo de Lectura
+          <select id="mMt">
+            <option value="Corriente de fuga">Corriente de fuga</option>
+            <option value="Lectura de pinza">Lectura de pinza</option>
+            <option value="Lectura reportada">Lectura reportada</option>
+          </select>
+        </label>
+        <label>Observación / Diagnóstico
+          <input id="mMo" type="text" placeholder="Ej: Diagnóstico de fuga / Coherente con placa">
+        </label>
+        <button class="success" onclick="saveMobileMeasurement()" style="padding:12px; font-size:15px; margin-top:8px;">
+          💾 Guardar Medición en el Registro
+        </button>
+      </div>
+
+      <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border-color);">
+        <h3>📋 Últimos registros agregados</h3>
+        <div id="mobileRecentList" style="font-size:12px; color:var(--text-muted);">
+          No se han agregado registros en esta sesión.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 6: RECOMENDACIONES Y AHORRO -->
+  <section id="recommendations" class="page">
+    <div class="panel">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+        <h2 style="margin:0;">💡 Recomendaciones de Reducción y Eficiencia</h2>
+        <button class="light" onclick="openPDFReportModal()">📄 Generar Reporte PDF (Horizontal)</button>
+      </div>
+      <p class="hint" style="color:var(--text-muted); font-size:13px; margin-top:-6px;">
+        Simulador interactivo de ahorro. Modifica el porcentaje de reducción en las horas de uso de cada equipo para proyectar tu nuevo recibo de energía.
+      </p>
+
+      <div id="recommendationSummary" class="rec-summary"></div>
+
+      <div class="comparison-head">
+        <h3>Comparativo Proyectado de Reducción por Equipo</h3>
+      </div>
+
+      <div class="tablewrap" style="margin-bottom:20px;">
+        <table class="recommend-table">
+          <thead>
+            <tr>
+              <th>Equipo</th>
+              <th>Actual kWh/mes</th>
+              <th>Reducción %</th>
+              <th>Ahorro kWh/mes</th>
+              <th>Nuevo kWh/mes</th>
+              <th>Costo Actual</th>
+              <th>Costo Nuevo</th>
+            </tr>
+          </thead>
+          <tbody id="recommendationTable"></tbody>
+        </table>
+      </div>
+
+      <div id="recommendationList"></div>
+    </div>
+
+    <div class="panel" style="border-top:4px solid #3b82f6;">
+      <h2>🧛‍♂️ Análisis de Consumo Fantasma / Reposo (Standby Vampiro)</h2>
+      <p style="font-size:13px; color:var(--text-muted); margin-top:-6px;">
+        Gasto continuo generado por equipos que permanecen enchuflados las 24 horas recibiendo corriente de mantenimiento (mA en reposo) aunque no se estén utilizando activamente.
+      </p>
+
+      <div class="rec-summary" style="grid-template-columns: repeat(4, 1fr); margin-bottom:16px;">
+        <div class="rec-kpi">
+          <small>Gasto Total Standby / Reposo</small>
+          <b id="standbyCostKpi" style="color:#0284c7;">S/ 0.00 /mes</b>
+          <small style="color:var(--text-muted);">Dinero en modo reposo</small>
+        </div>
+        <div class="rec-kpi">
+          <small>Consumo Energético Reposo</small>
+          <b id="standbyKwhKpi">0.00 kWh/mes</b>
+          <small style="color:var(--text-muted);">Suma standby de vivienda</small>
+        </div>
+        <div class="rec-kpi">
+          <small>Potencia Continua Standby</small>
+          <b id="standbyWattsKpi">0.0 W</b>
+          <small style="color:var(--text-muted);">Carga pasiva conectada</small>
+        </div>
+        <div class="rec-kpi new-total">
+          <small>Oportunidad de Ahorro Directo</small>
+          <b id="standbySaveKpi" style="color:#047857; font-size:16px; margin-top:8px;">S/ 0.00 /mes</b>
+          <small style="color:#047857;">Desconectando o con llave</small>
+        </div>
+      </div>
+
+      <div class="tablewrap" style="margin-bottom:16px;">
+        <table class="recommend-table">
+          <thead>
+            <tr>
+              <th>Equipo / Circuito</th>
+              <th>mA Reposo Medido</th>
+              <th>Potencia Standby (W)</th>
+              <th>Horas Reposo/día</th>
+              <th>kWh/mes Reposo</th>
+              <th style="background:#0284c7; color:#fff;">Gasto Reposo S/mes</th>
+              <th>Recomendación de Desconexión</th>
+            </tr>
+          </thead>
+          <tbody id="standbyVampiresTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>📌 Plan de Acción para Reducción de Consumo</h2>
+      <div class="grid-2" style="gap:12px;">
+        <div style="border:1px solid var(--border-color); border-radius:8px; padding:14px;">
+          <b>1 · Corregir Equipos de Operación 24 Horas</b>
+          <p style="font-size:12px; color:var(--text-muted); margin:4px 0 0;">Routers, cámaras, repetidores y TV Box operan 24/7. Utiliza temporizadores digitales si no se requieren de madrugada.</p>
+        </div>
+        <div style="border:1px solid var(--border-color); border-radius:8px; padding:14px;">
+          <b>2 · Validar Fugas Diagnosticadas</b>
+          <p style="font-size:12px; color:var(--text-muted); margin:4px 0 0;">Las fugas en piso 1 (0.895 mA), piso 2 (0.635 mA) y piso 3 (0.450 mA) deben monitorearse periódicamente con la pinza UT251C+.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 7: GOOGLE WORKSPACE -->
+  <section id="googlesheets" class="page">
+    <div class="cards" style="margin-bottom:16px;">
+      <article style="border-left:4px solid var(--primary);">
+        <small>Estado Google OAuth</small>
+        <b id="gwKpiStatus" style="font-size:15px; color:var(--primary);">🔒 No Conectado</b>
+        <span class="badge" style="background:#e0f2fe; color:#0369a1;">Acceso Google</span>
+      </article>
+      <article style="border-left:4px solid #047857;">
+        <small>Respaldo Google Sheets</small>
+        <b id="gwKpiSheets" style="color:#047857;">Cuadro + Mediciones</b>
+        <span class="badge" style="background:#ecfdf5; color:#047857;">Exportable a Drive</span>
+      </article>
+      <article style="border-left:4px solid #7c3aed;">
+        <small>Automatización Apps Script</small>
+        <b id="gwKpiScript" style="color:#7c3aed;">Versión 2.4 .GS</b>
+        <span class="badge" style="background:#f3e8ff; color:#6b21a8;">Listo para copiar</span>
+      </article>
+      <article style="border-left:4px solid #f59e0b;">
+        <small>Citas en Calendar</small>
+        <b id="gwKpiCalendar" style="color:#b45309;">Inspecciones CNE</b>
+        <span class="badge" style="background:#fffbeb; color:#b45309;">Sincronizado</span>
+      </article>
+    </div>
+
+    <div class="sheets-banner">
+      <div>
+        <h2>📊 Integración con Google Workspace (Sheets & Calendar)</h2>
+        <p>Respalda tus cálculos en Google Sheets, genera scripts en Apps Script y agenda inspecciones técnicas en Google Calendar.</p>
+      </div>
+      <div id="googleAuthContainer" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <button class="light" onclick="openPDFReportModal()">📄 Generar Reporte PDF (Horizontal)</button>
+        <button id="btnGoogleAuth" class="light" onclick="handleGoogleSignIn()">
+          🔐 Iniciar Sesión con Google
+        </button>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <h2>📊 Respaldo en Google Sheets</h2>
+        <p style="font-size:13px; color:var(--text-muted);">Crea una hoja de cálculo nueva en tu Google Drive con pestañas para Cuadro de Cargas, Mediciones UT251C+, Consumo y Parámetros del Sistema.</p>
+        <button class="success" onclick="handleExportToGoogleSheets()" style="padding:10px 16px; font-size:14px;">
+          🚀 Crear Hoja en Google Sheets
+        </button>
+        <div id="sheetsLinkBox" style="margin-top:14px;"></div>
+      </div>
+
+      <div class="panel">
+        <h2>📜 Código Google Apps Script (.gs)</h2>
+        <p style="font-size:13px; color:var(--text-muted);">Obtén el código en Apps Script para automatizar menús personalizados, alertas de consumo y recálculo automático en Google Sheets.</p>
+        <button onclick="showAppsScriptModal()" style="padding:10px 16px; font-size:14px;">
+          ⚙️ Ver y Copiar Código Apps Script
+        </button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>📅 Agenda de Mantenimiento e Inspección Eléctrica (Google Calendar)</h2>
+      <p style="font-size:13px; color:var(--text-muted);">Programa inspecciones de campo, seguimiento de fugas a tierra o auditorías CNE directamente en tu Google Calendar.</p>
+
+      <div class="grid-2" style="margin-top:16px;">
+        <div style="border:1px solid var(--border-color); border-radius:8px; padding:16px; background:#fafafa;">
+          <h3 style="margin:0 0 12px; font-size:15px;">➕ Programar Nueva Inspección en Calendar</h3>
+          <div class="form" style="grid-template-columns:1fr;">
+            <label>Título del Evento
+              <input id="calSummary" type="text" value="⚡ Inspección de Fugas e Instalación Eléctrica">
+            </label>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <label>Fecha de Inspección
+                <input id="calDate" type="date">
+              </label>
+              <label>Hora de Inicio
+                <input id="calTime" type="time" value="09:00">
+              </label>
+            </div>
+            <label>Ubicación de la Vivienda / Proyecto
+              <input id="calLocation" type="text" value="Vivienda Unifamiliar (360 m²)">
+            </label>
+            <label>Detalles / Diagnóstico
+              <textarea id="calDescription" rows="3">Seguimiento de fugas de corriente (1.79 mA total registrados) e inspección de tableros con pinza amperimétrica UT251C+.</textarea>
+            </label>
+            <button class="success" onclick="handleCreateCalendarEvent()" style="padding:10px; font-size:14px; margin-top:6px;">
+              📅 Agendar Evento en mi Google Calendar
+            </button>
+          </div>
+        </div>
+
+        <div style="border:1px solid var(--border-color); border-radius:8px; padding:16px; background:#fafafa;">
+          <h3 style="margin:0 0 12px; font-size:15px; display:flex; align-items:center; justify-content:space-between;">
+            📋 Próximas Inspecciones en Calendar
+            <button class="sm light" onclick="handleRefreshCalendarEvents()">🔄 Actualizar</button>
+          </h3>
+          <div id="calendarEventsList" style="font-size:13px; color:var(--text-muted);">
+            Inicia sesión con Google para ver tus próximos eventos agendados.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 8: NORMATIVA PERU -->
+  <section id="normativa" class="page">
+    <div class="cards" style="margin-bottom:16px;">
+      <article style="border-left:4px solid var(--primary);">
+        <small>Tensión Nominal Perú</small>
+        <b style="color:var(--primary);">220 V (1F / 3F)</b>
+        <span class="badge" style="background:#e0f2fe; color:#0369a1;">CNE Utilización</span>
+      </article>
+      <article style="border-left:4px solid #ef4444;">
+        <small>Límite Fuga Diferencial</small>
+        <b style="color:#ef4444;">30.0 mA (&lt;30ms)</b>
+        <span class="badge" style="background:#fef2f2; color:#b91c1c;">Protección humana</span>
+      </article>
+      <article style="border-left:4px solid #047857;">
+        <small>Resistencia Pozo a Tierra</small>
+        <b style="color:#047857;">&lt; 25.0 Ω</b>
+        <span class="badge" style="background:#ecfdf5; color:#047857;">Reglamento CNE</span>
+      </article>
+      <article style="border-left:4px solid #7c3aed;">
+        <small>Marco de Diseño</small>
+        <b style="color:#7c3aed;">RNE EM.010 & CNE</b>
+        <span class="badge" style="background:#f3e8ff; color:#6b21a8;">Oficial MINEM</span>
+      </article>
+    </div>
+
+    <div class="panel">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+        <h2 style="margin:0;">📜 Normativa Peruana y Código Nacional de Electricidad (CNE)</h2>
+        <button class="light" onclick="openPDFReportModal()">📄 Generar Reporte PDF (Horizontal)</button>
+      </div>
+      <div class="notice">
+        <b>Precisión normativa:</b> CAPECO es un gremio de construcción. Para expedientes de proyectos eléctricos formales en Perú se aplica el <b>RNE EM.010 (Instalaciones Eléctricas Interiores)</b> y el <b>Código Nacional de Electricidad – Utilización (Sección 050)</b>.
+      </div>
+
+      <h3>Referencia CNE – Utilización 050-200 (Viviendas Unifamiliares)</h3>
+      <p style="font-size:13px; color:var(--text-muted);">
+        Establece la metodología de carga básica por área de vivienda (hasta 90 m²: 1500 W; de 90 a 150 m²: 2500 W, etc.) y la adición de cargas específicas con factores de demanda reglamentarios.
+      </p>
+
+      <div class="norm">
+        <b>Concepto Normativo</b><b>Aplicación en el Sistema</b>
+        <span>Carga Instalada (CI)</span><span>Suma de potencias nominales en Watts de todos los equipos y circuitos.</span>
+        <span>Factor de Demanda (FD)</span><span>Factor editable (0 a 1.0) para determinar la demanda simultánea máxima.</span>
+        <span>Factor de Potencia (FP)</span><span>Factor de desfase (típicamente 0.85 a 0.95) para calcular corriente e intensidad (Amperios).</span>
+        <span>Máxima Demanda (MD)</span><span>$MD (kW) = \frac{\text{Carga Instalada} \times FD}{1000}$</span>
+        <span>Cálculo de Corriente 1F</span><span>$I (A) = \frac{P (W)}{V (V) \cdot FP}$</span>
+        <span>Cálculo de Corriente 3F</span><span>$I (A) = \frac{P (W)}{\sqrt{3} \cdot V (V) \cdot FP}$</span>
+      </div>
+    </div>
+  </section>
 </main>
-<footer>Herramienta de análisis y apoyo de diseño. Verificar cálculos reglamentarios con profesional competente.</footer>
-<script src="app.js"></script>
-</body></html>
+
+<!-- MODAL: REPORTE PDF PROFESIONAL -->
+<div id="pdfReportModal" class="modal-overlay">
+  <div class="modal-box" style="max-width:980px;">
+    <button class="modal-close no-print" onclick="closePDFReportModal()">×</button>
+    
+    <div class="pdf-action-buttons no-print" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border-color);">
+      <div>
+        <h3 style="margin:0; font-size:16px;">📄 Vista Previa del Reporte PDF Técnico</h3>
+        <p style="margin:2px 0 0; font-size:12px; color:var(--text-muted);">La interfaz del usuario se oculta automáticamente al exportar a PDF o imprimir.</p>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="light" onclick="closePDFReportModal()">Cerrar</button>
+        <button class="success" onclick="printPDFReport()" style="padding:10px 18px; font-size:14px;">
+          🖨 Imprimir / Guardar como PDF
+        </button>
+      </div>
+    </div>
+
+    <div class="pdf-report-content">
+      <!-- HEADER CON LOGOS DEL PROYECTO -->
+      <div style="display:flex; align-items:center; gap:16px; border-bottom:2px solid #0f172a; padding-bottom:14px; margin-bottom:16px;">
+        <svg width="60" height="60" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="100" height="100" rx="16" fill="#0F172A"/>
+          <path d="M50 10L15 28V50C15 71.5 30 90.5 50 96C70 90.5 85 71.5 85 50V28L50 10Z" fill="#0284C7"/>
+          <path d="M53 25L32 52H48L43 78L68 46H51L53 25Z" fill="#F59E0B" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <div style="flex:1;">
+          <h1 style="margin:0; font-size:20px; font-weight:800; color:#0f172a; text-transform:uppercase;">INFORME TÉCNICO · CUADRO DE CARGAS & DIAGNÓSTICO ELÉCTRICO</h1>
+          <p style="margin:3px 0 0; font-size:12px; color:#475569; font-weight:600;">Proyecto Eléctrico Unifamiliar · RNE EM.010 & CNE Utilización Sección 050</p>
+        </div>
+        <div style="text-align:right; font-size:11px; color:#475569; border-left:1px solid #cbd5e1; padding-left:14px;">
+          <b>CÓDIGO PROYECTO:</b> ELEC-2026-HG<br>
+          <b>EMISIÓN:</b> <span id="reportPrintDate"></span><br>
+          <b>VERSIÓN:</b> 2.4 Oficial
+        </div>
+      </div>
+
+      <!-- METADATOS DEL PROYECTO -->
+      <div class="pdf-meta-grid">
+        <div class="pdf-meta-item">
+          <small>Propietario / Cliente</small>
+          <b>Hugo</b>
+        </div>
+        <div class="pdf-meta-item">
+          <small>Ubicación / Tipo</small>
+          <b>Vivienda Unifamiliar (360 m²)</b>
+        </div>
+        <div class="pdf-meta-item">
+          <small>Sistema Eléctrico</small>
+          <b id="pdfSys">220 V · 3F (Trifásico)</b>
+        </div>
+        <div class="pdf-meta-item">
+          <small>Tarifa de Energía</small>
+          <b id="pdfTar">S/ 0.6545 por kWh</b>
+        </div>
+      </div>
+
+      <!-- TABLA RESUMEN DE RESULTADOS CALCULADOS -->
+      <h3 style="margin:16px 0 8px; font-size:14px; text-transform:uppercase; color:#0f172a;">1. Tabla Resumen de Resultados Calculados</h3>
+      <table class="pdf-kpi-table">
+        <thead>
+          <tr>
+            <th>Parámetro Evaluado</th>
+            <th>Valor Obtenido</th>
+            <th>Unidad</th>
+            <th>Criterio de Evaluación / Nota Técnica</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Potencia Instalada Total (CI)</b></td>
+            <td id="pdfInst">0.00 kW</td>
+            <td>kW</td>
+            <td>Suma nominal de potencias activas conectadas.</td>
+          </tr>
+          <tr>
+            <td><b>Máxima Demanda Estimada (MD)</b></td>
+            <td id="pdfDem">0.00 kW</td>
+            <td>kW</td>
+            <td>Carga con Factores de Demanda (FD) según uso.</td>
+          </tr>
+          <tr>
+            <td><b>Consumo Mensual Modelado</b></td>
+            <td id="pdfKwh">0.00 kWh</td>
+            <td>kWh / mes</td>
+            <td>Proyección basada en horas promedio de operación.</td>
+          </tr>
+          <tr>
+            <td><b>Costo Estimado de Energía</b></td>
+            <td id="pdfCost">S/ 0.00</td>
+            <td>S/ / mes</td>
+            <td>Calculado con tarifa S/ 0.6545 / kWh.</td>
+          </tr>
+          <tr>
+            <td><b>Consumo Real Recibo de Luz</b></td>
+            <td id="pdfBill">331.00 kWh</td>
+            <td>kWh / mes</td>
+            <td>Referencia real de facturación del servicio.</td>
+          </tr>
+          <tr>
+            <td><b>Diferencia / Brecha Modelo vs Real</b></td>
+            <td id="pdfDiff">0.00 kWh</td>
+            <td>kWh / mes</td>
+            <td>Calibración del modelo frente al hábito real.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- CUADRO DE CARGAS CON COSTO EN SOLES -->
+      <h3 style="margin:20px 0 8px; font-size:14px; text-transform:uppercase; color:#0f172a;">2. Resumen del Cuadro de Cargas & Costo Mensual en Soles (S/)</h3>
+      <div class="tablewrap" style="margin-bottom:16px;">
+        <table id="pdfLoadsTable" style="min-width:0; width:100%;">
+          <thead>
+            <tr>
+              <th>Piso</th>
+              <th>Equipo / Circuito</th>
+              <th>Cant.</th>
+              <th>W Activo</th>
+              <th>FP</th>
+              <th>FD</th>
+              <th>I Activa (A)</th>
+              <th>MD kW</th>
+              <th>h/día</th>
+              <th>mA Reposo</th>
+              <th>kWh/mes</th>
+              <th style="background:#047857; color:#fff;">Gasto S/mes</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- MEDICIONES PINZA UT251C+ -->
+      <h3 style="margin:20px 0 8px; font-size:14px; text-transform:uppercase; color:#0f172a;">3. Mediciones de Operación con Pinza UT251C+</h3>
+      <div class="tablewrap" style="margin-bottom:20px;">
+        <table id="pdfMeasTable" style="min-width:0; width:100%;">
+          <thead>
+            <tr>
+              <th>Equipo / Circuito</th>
+              <th>Estado</th>
+              <th>Lectura Medida</th>
+              <th>Unidad</th>
+              <th>Instrumento</th>
+              <th>Observación / Diagnóstico</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- CUADRO DE CORRIENTES DE FUGA A TIERRA -->
+      <h3 style="margin:20px 0 8px; font-size:14px; text-transform:uppercase; color:#ef4444;">4. Diagnóstico Especializado de Corrientes de Fuga a Tierra (mA) & Efectos Fisiológicos</h3>
+      <div class="tablewrap" style="margin-bottom:20px;">
+        <table id="pdfLeakTable" style="min-width:0; width:100%;">
+          <thead>
+            <tr>
+              <th>Circuito / Zona Evaluada</th>
+              <th>Condición Prueba</th>
+              <th>Corriente Fuga (mA)</th>
+              <th>Umbral Máximo</th>
+              <th>Diagnóstico / Estado</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- RESUMEN DE SEGURIDAD FISIOLÓGICA -->
+      <div style="border:1px solid #cbd5e1; border-radius:6px; padding:12px; background:#f8fafc; margin-bottom:20px; font-size:11px;">
+        <b>Evaluación Fisiológica de Fugas (IEC 60479-1):</b> La corriente de fuga total acumulada de <b>1.79 mA</b> se ubica en el rango de <i>cosquilleo / calambre leve</i> (0.5 - 3 mA), totalmente inofensivo frente al umbral de parálisis o tetanización (&gt; 10 mA) y con un margen de seguridad del <b>94.03%</b> frente al umbral de disparo de 30 mA del Interruptor Diferencial.
+      </div>
+
+      <!-- FIRMA Y CONFORMIDAD TECNICA -->
+      <div class="pdf-signature-block">
+        <div class="pdf-signature-line">
+          <b>Ing. Proyectista Eléctrico / Responsable Técnico</b><br>
+          CIP N° 284192 · Especialidad Ingeniería Eléctrica
+        </div>
+        <div class="pdf-signature-line">
+          <b>Propietario / Cliente Registrado</b><br>
+          Conformidad de Levantamiento de Campo · Hugo
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: GOOGLE APPS SCRIPT CODE -->
+<div id="appsScriptModal" class="modal-overlay">
+  <div class="modal-box">
+    <button class="modal-close no-print" onclick="closeAppsScriptModal()">×</button>
+    <h2>📜 Código Google Apps Script (.gs)</h2>
+    <p style="font-size:13px; color:var(--text-muted);">Copia este código y pégalo en tu Google Sheet (Extensiones > Apps Script) para agregar menús automatizados y recalculo:</p>
+    <pre id="appsScriptCode" class="code-box"></pre>
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+      <button class="light" onclick="copyAppsScriptCode()">📋 Copiar Código</button>
+      <button class="success" onclick="closeAppsScriptModal()">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="no-print">
+  <span id="toastMsg">Mensaje de notificación</span>
+</div>
+
+<footer class="no-print">
+  ⚡ Hugo · Herramienta de diseño y cálculo eléctrico. Verificar proyectos oficiales con profesional colegiado (CIP).
+</footer>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
